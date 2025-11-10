@@ -48,23 +48,33 @@
     [Parameter]
     public int? TransactionId { get; set; }
 
-    private DateTime? _date = DateTime.Today;
-    private TimeSpan? _time = DateTime.Now.TimeOfDay;
-    private Transaction Transaction;
+    private DateTime? _date;
+    private TimeSpan? _time;
+    private Transaction Transaction = new Transaction();
     protected override async Task OnInitializedAsync()
     {
-        if (TransactionId != null)
-        {
-            Transaction = await TransactionService.GetAsync((int)TransactionId);
-        }
-        
-        if(Transaction == null)
+        if (TransactionId == null)
         {
             Transaction = new Transaction();
             Transaction.Type = TransactionType.Expense;
             Transaction.Date = DateTime.Now;
+            _date = DateTime.Today;
+            _time = DateTime.Now.TimeOfDay;
+            return;
+
         }
+        Transaction? t = await TransactionService.GetAsync((int)TransactionId);
+        if(t == null){
+            MudDialog.Close();
+            return;
+        }
+
+        Transaction = t;
+        _date = Transaction.Date.Date;
+        _time = Transaction.Date.TimeOfDay;
     }
+
+
     private async void Submit()
     {
         await form.Validate();
@@ -73,20 +83,10 @@
             return;
         }
 
-        if (_date.HasValue)
-        {
-            Transaction.Date = (DateTime)_date;
-        }
-        else
-        {
-            Transaction.Date = DateTime.Now;
-        }
-
-        if (_time.HasValue)
-        {
-            Transaction.Date = (DateTime)(Transaction.Date.Date + _time);
-        }
-
+        // since we validate first
+        // we know that _date and _time have values
+        Transaction.Date = (DateTime)(_date + _time);
+        
         await TransactionService.Save(Transaction);
         MudDialog.Close(DialogResult.Ok(result: true));
     }

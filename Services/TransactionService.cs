@@ -22,7 +22,17 @@ namespace ExpenseTracker.Services
         public async Task Save(Transaction transaction)
         {
             using var context = await _contextFactory.CreateDbContextAsync();
-            await context.Transactions.AddAsync(transaction);
+            if (transaction.Id == 0)
+            {
+                await context.Transactions.AddAsync(transaction);
+            }
+            else
+            {
+                var old = await GetAsync(transaction.Id);
+                old.Amount = transaction.Amount;
+                old.Date = transaction.Date;
+                old.Description = transaction.Description;
+            }
             await context.SaveChangesAsync();
         }
         
