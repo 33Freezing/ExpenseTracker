@@ -7,25 +7,27 @@
         Transaction
     </TitleContent>
     <DialogContent>
-    <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
-    <div style="display: flex; flex-direction: column; gap: 1rem; min-width: 350px;">
-            <MudSelect @bind-Value="Transaction.Type" Label="Type" Required="true" RequiredError="Type of transaction is required!">
-                @foreach (TransactionType item in Enum.GetValues(typeof(TransactionType)))
-                {
-                    <MudSelectItem Value="@item">@item</MudSelectItem>
-                }
-            </MudSelect>
-            <MudNumericField @bind-Value="Transaction.Amount" Label="Amount" Variant="Variant.Text" Required="true" RequiredError="Amount is required!">
-            </MudNumericField>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <MudDatePicker Label="Date" @bind-Date="_date"  Required="true" RequiredError="Date is required!"/>
-                <MudTimePicker Label="Time" AmPm="true" @bind-Time="_time" RequiredError="Time is required!" />
+        <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+            <div style="display: flex; flex-direction: column; gap: 1rem; min-width: 350px;">
+                <MudSelect @bind-Value="Transaction.Type" Label="Type" Required="true"
+                    RequiredError="Type of transaction is required!">
+                    @foreach (TransactionType item in Enum.GetValues(typeof(TransactionType)))
+                    {
+                        <MudSelectItem Value="@item">@item</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudNumericField @bind-Value="Transaction.Amount" Label="Amount" Variant="Variant.Text" Required="true"
+                    RequiredError="Amount is required!">
+                </MudNumericField>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <MudDatePicker Label="Date" @bind-Date="_date" Required="true" RequiredError="Date is required!" />
+                    <MudTimePicker Label="Time" AmPm="true" @bind-Time="_time" RequiredError="Time is required!" />
+                </div>
+                <MudTextField @bind-Value="Transaction.Description" Label="Description" Variant="Variant.Text">
+                </MudTextField>
             </div>
-            <MudTextField @bind-Value="Transaction.Description" Label="Description" Variant="Variant.Text">
-            </MudTextField>
-        </div>
-    </MudForm>
-        
+        </MudForm>
+
     </DialogContent>
     <DialogActions>
         <div style="display: flex; flex-direction: row; gap: 1rem;">
@@ -37,41 +39,54 @@
 
 @code {
     bool success;
-    string[] errors = { };    
+    string[] errors = { };
     MudForm form;
 
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; }
 
+    [Parameter]
+    public int? TransactionId { get; set; }
+
     private DateTime? _date = DateTime.Today;
     private TimeSpan? _time = DateTime.Now.TimeOfDay;
     private Transaction Transaction;
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        Transaction = new Transaction();
-        Transaction.Type = TransactionType.Expense;
-        Transaction.Date = DateTime.Now;
+        if (TransactionId != null)
+        {
+            Transaction = await TransactionService.GetAsync((int)TransactionId);
+        }
+        
+        if(Transaction == null)
+        {
+            Transaction = new Transaction();
+            Transaction.Type = TransactionType.Expense;
+            Transaction.Date = DateTime.Now;
+        }
     }
     private async void Submit()
     {
         await form.Validate();
-        if(!form.IsValid){
+        if (!form.IsValid)
+        {
             return;
         }
 
-        Transaction.Date = DateTime.Now;
-        
-        if(_date.HasValue){
+        if (_date.HasValue)
+        {
             Transaction.Date = (DateTime)_date;
         }
-        else{
+        else
+        {
             Transaction.Date = DateTime.Now;
         }
 
-        if(_time.HasValue){
+        if (_time.HasValue)
+        {
             Transaction.Date = (DateTime)(Transaction.Date.Date + _time);
         }
-        
+
         await TransactionService.Save(Transaction);
         MudDialog.Close(DialogResult.Ok(result: true));
     }

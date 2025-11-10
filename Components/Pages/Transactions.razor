@@ -14,12 +14,17 @@
 <div style="display: flex; flex-direction: column; gap: 1rem;">
     <PageTitle>Trasactions</PageTitle>
     <h1>My Transactions</h1>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenTransactionDialogAsync">Add</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OpenTransactionDialogAsync(null))">Add</MudButton>
     <MudDataGrid Items="@MyTransactions">
         <Columns>
             <PropertyColumn Property="t => t.Amount"></PropertyColumn>
             <PropertyColumn Property="t => t.Date"></PropertyColumn>
             <PropertyColumn Property="t => t.Description"></PropertyColumn>
+            <TemplateColumn>
+                <CellTemplate>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OpenTransactionDialogAsync(context.Item.Id))">Edit</MudButton>
+                </CellTemplate>
+            </TemplateColumn>
         </Columns>
     </MudDataGrid>
 </div>
@@ -33,11 +38,15 @@
         MyTransactions = await TransactionService.GetAllAsync();
     }
 
-    private async Task OpenTransactionDialogAsync()
+    private async Task OpenTransactionDialogAsync(int? transaction_id)
     {
-        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var options = new DialogOptions { CloseOnEscapeKey = true, };
+        var parameters = new DialogParameters<TransactionDialog>
+        {
+            { x => x.TransactionId, transaction_id }
+        };
 
-        var dialog = await DialogService.ShowAsync<TransactionDialog>("Simple Dialog", options);
+        var dialog = await DialogService.ShowAsync<TransactionDialog>(title: "Simple Dialog", parameters, options);
         var result = await dialog.Result;
         if (!result.Canceled)
         {
