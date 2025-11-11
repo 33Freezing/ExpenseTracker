@@ -28,10 +28,11 @@ namespace ExpenseTracker.Services
             }
             else
             {
-                var old = await GetAsync(transaction.Id);
-                old.Amount = transaction.Amount;
-                old.Date = transaction.Date;
-                old.Description = transaction.Description;
+                var oldTransaction = await context.Transactions.SingleAsync(t => t.Id == transaction.Id);
+                oldTransaction.Type = transaction.Type;
+                oldTransaction.Amount = transaction.Amount;
+                oldTransaction.Date = transaction.Date;
+                oldTransaction.Description = transaction.Description;
             }
             await context.SaveChangesAsync();
         }
@@ -39,8 +40,7 @@ namespace ExpenseTracker.Services
         public async Task<Transaction?> GetAsync(int transactionId)
         {
             using var context = await _contextFactory.CreateDbContextAsync();
-            var transactions = await context.Transactions.Where(t => t.Id == transactionId).ToListAsync();
-            return transactions.FirstOrDefault();
+            return await context.Transactions.SingleAsync(t => t.Id == transactionId);
         }
     }
 }
