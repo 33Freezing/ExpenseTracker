@@ -9,10 +9,15 @@ namespace Database
 
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<Account> Accounts { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Transaction>()
                 .Property(t => t.Amount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Account>()
+                .Property(t => t.InitialBalace)
                 .HasPrecision(18, 2);
 
             modelBuilder.Entity<Category>().HasData(

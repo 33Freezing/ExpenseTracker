@@ -1,0 +1,35 @@
+@using ExpenseTracker.Database.Models
+@using ExpenseTracker.Dtos
+@using ExpenseTracker.Services
+@inject AccountService AccountService
+
+
+<h1>My Accounts</h1>
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OpenAccountDialogAsync(null))">Add</MudButton>
+
+@if(MyAccounts == null || MyAccounts.Count == 0){
+    <p>No accounts created yet</p>
+}
+else{
+    foreach(var account in MyAccounts){
+        <div>
+            <p>Name: @account.Name</p>
+            <p>Balance: @account.CurrentBalance</p>
+        </div>
+    }
+}
+
+@code{
+    private List<AccountWithBalance> MyAccounts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        MyAccounts = await AccountService.GetAllAccountsWithBalanceAsync();
+
+    }
+
+    private void OpenAccountDialogAsync(int? accountId){
+
+    }
+}
