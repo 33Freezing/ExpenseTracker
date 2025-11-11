@@ -2,6 +2,7 @@
 @using ExpenseTracker.Services
 @inject TransactionService TransactionService
 @inject CategoryService CategoryService
+@inject NotificationService NotificationService
 
 <MudDialog>
     <TitleContent>
@@ -138,6 +139,7 @@
         Transaction.CategoryId = Category.Id;
         
         await TransactionService.Save(Transaction);
+        await NotificationService.ShowSuccess("Transaction succesfully saved! ");
         MudDialog.Close(DialogResult.Ok(result: true));
     }
 

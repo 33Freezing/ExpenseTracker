@@ -23,7 +23,7 @@ namespace ExpenseTracker.Services
         {
             // otherwise it will try to save the category as well
             transaction.Category = null;
-            
+
             using var context = await _contextFactory.CreateDbContextAsync();
             if (transaction.Id == 0)
             {
@@ -37,6 +37,14 @@ namespace ExpenseTracker.Services
                     context.Entry(oldTransaction).CurrentValues.SetValues(transaction);
                 }
             }
+            await context.SaveChangesAsync();
+        }
+        
+        public async Task DeleteAsync(int transactionId)
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var transaction = await context.Transactions.SingleAsync(t => t.Id == transactionId);
+            context.Transactions.Remove(transaction);
             await context.SaveChangesAsync();
         }
         

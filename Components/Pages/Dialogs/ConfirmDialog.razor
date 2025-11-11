@@ -1,0 +1,31 @@
+
+<MudDialog>
+    <TitleContent>
+        Warning
+    </TitleContent>
+    <DialogContent>
+        @Message
+    </DialogContent>
+    <DialogActions>
+        <div style="display: flex; flex-direction: row; gap: 1rem;">
+            <MudButton Color="Color.Primary" OnClick="Confirm">Confirm</MudButton>
+            <MudButton OnClick="Cancel">Cancel</MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code{
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public string Message { get; set; }
+
+    private async void Confirm()
+    {
+        MudDialog.Close(DialogResult.Ok(result: true));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+}

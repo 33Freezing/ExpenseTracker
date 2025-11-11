@@ -6,6 +6,7 @@
 @inject TransactionService TransactionService
 @inject CategoryService CategoryService
 @inject IDialogService DialogService
+@inject NotificationService NotificationService
 
 <MudThemeProvider />
 <MudPopoverProvider />
@@ -45,9 +46,14 @@
                 <PropertyColumn Property="t => t.Date" Title="Date"></PropertyColumn>
                 <PropertyColumn Property="t => t.Category.Name" Title="Category"></PropertyColumn>
                 <PropertyColumn Property="t => t.Description" Title="Description"></PropertyColumn>
-                <TemplateColumn>
+                <TemplateColumn >
                     <CellTemplate>
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OpenTransactionDialogAsync(context.Item.Id))">Edit</MudButton>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn>
+                    <CellTemplate>
+                        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => OpenConfirmDialog(context.Item.Id))">Delete</MudButton>
                     </CellTemplate>
                 </TemplateColumn>
             </Columns>
@@ -87,6 +93,25 @@
         }
     }
 
+    private async Task OpenConfirmDialog(int transaction_id)
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { x => x.Message,  "Are you sure you want to delete the transaction? " }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>(title: "Warning", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            await TransactionService.DeleteAsync(transaction_id);
+            await NotificationService.ShowSuccess("Transaction succesfully deleted! ");
+            await UpdatePage();
+        }
+    }
+
+    
     private async void FilterChanged()
     {
         await UpdatePage();
@@ -114,4 +139,6 @@
             }
         }
     }
+
+
 }

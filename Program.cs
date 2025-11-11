@@ -15,6 +15,7 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<CategoryService>();
+builder.Services.AddScoped<NotificationService>();
 
 var app = builder.Build();
 
