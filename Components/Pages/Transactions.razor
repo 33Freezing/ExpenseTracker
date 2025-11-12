@@ -61,17 +61,17 @@
         <MudSelect T="DateFilterPreset?" Label="Date" @bind-Value="dateFilter"
              @bind-Value:after="this.FilterChanged">
             <MudSelectItem Value="@((DateFilterPreset?)null)">All</MudSelectItem>
-            @foreach (DateFilterPreset item in Enum.GetValues(typeof(DateFilterPreset)))
-            {
-                <MudSelectItem Value="@((DateFilterPreset?)item)">@item</MudSelectItem>
-            }
+            <MudSelectItem Value="@((DateFilterPreset?)DateFilterPreset.ThisMonth)">This Month</MudSelectItem>
+            <MudSelectItem Value="@((DateFilterPreset?)DateFilterPreset.LastMonth)">Last Month</MudSelectItem>
+            <MudSelectItem Value="@((DateFilterPreset?)DateFilterPreset.Last3Months)">Last Three Months</MudSelectItem>
+            <MudSelectItem Value="@((DateFilterPreset?)DateFilterPreset.ThisYear)">This Year</MudSelectItem>
         </MudSelect>
 
 
     </div>
     @if(MyTransactions is not null){
 
-        <MudDataGrid Items="@MyTransactions" Class="data-grid">
+        <MudDataGrid T="Transaction" Items="@MyTransactions" Class="data-grid">
             <Columns>
                 <TemplateColumn Title="Amount">
                     <CellTemplate>
@@ -92,6 +92,9 @@
                     </CellTemplate>
                 </TemplateColumn>
             </Columns>
+            <PagerContent>
+                <MudDataGridPager T="Transaction" />
+            </PagerContent>
         </MudDataGrid>
     }
 </div>
@@ -146,7 +149,7 @@
         var result = await dialog.Result;
         if (!result.Canceled)
         {
-            await UpdatePage();
+            await RefreshPage();
         }
     }
 
@@ -164,21 +167,22 @@
         {
             await TransactionService.DeleteAsync(transaction_id);
             await NotificationService.ShowSuccess("Transaction succesfully deleted! ");
-            await UpdatePage();
+            await RefreshPage();
         }
     }
 
     
     private async void FilterChanged()
     {
-        await UpdatePage();
+        await RefreshPage();
         StateHasChanged();
     }
 
-    async Task UpdatePage(){
+    async Task RefreshPage(){
 
         MyTransactions = await TransactionService.GetAllAsync();
         Categories = await CategoryService.GetAllAsync();
+        Accounts = await AccountService.GetAllAsync();
 
         if(transactionType is not null){
             MyTransactions = MyTransactions.Where(t => t.Category.Type == transactionType).ToList();
@@ -186,7 +190,6 @@
             
         }
         
-
         if(categoryId is not null){
             if(!Categories.Select(c => c.Id).ToList().Contains((int)categoryId)){
                 categoryId = null;
@@ -240,6 +243,7 @@
 
     private async void AddTestData(){
         await SeedDataService.SeedDummyDataAsync();
-        await UpdatePage();
+        await RefreshPage();
+        StateHasChanged();
     }
 }

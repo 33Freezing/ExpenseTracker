@@ -45,7 +45,7 @@ namespace ExpenseTracker.Services
                 var accountId = random.Next(0, 2) == 0 ? bankAccount.Id : cashAccount.Id;
 
                 var category = categories[random.Next(categories.Count)];
-                var amount = random.Next(20, 150);
+                var amount = random.Next(0, 300);
 
                 transactions.Add(new Transaction
                 {
@@ -58,17 +58,6 @@ namespace ExpenseTracker.Services
                 });
             }
 
-            for (int month = 0; month < 24; month++)
-            {
-                transactions.Add(new Transaction
-                {
-                    Amount = 3500m,
-                    Date = today.AddMonths(-month).AddDays(-random.Next(1, 5)),
-                    AccountId = bankAccount.Id,
-                    CategoryId = 11,
-                    Description = "Monthly Salary"
-                });
-            }
 
             foreach (var transaction in transactions)
             {
