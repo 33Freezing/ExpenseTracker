@@ -1,6 +1,7 @@
 using Database;
 using ExpenseTracker.Components;
 using ExpenseTracker.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 
@@ -13,13 +14,29 @@ builder.Services.AddRazorComponents()
 builder.Services.AddMudServices();
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+.AddEntityFrameworkStores<AppDbContext>()
+.AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/login";
+    options.LogoutPath = "/logout";
+});
+
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
+
 builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<SeedDataService>();
+builder.Services.AddScoped<IdentityService>();
 
 var app = builder.Build();
+
 
 using (var scope = app.Services.CreateScope())
 {
@@ -36,11 +53,15 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

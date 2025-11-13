@@ -1,0 +1,100 @@
+@page "/register"
+@using ExpenseTracker.Components.Pages.Dialogs
+@using ExpenseTracker.Database.Models
+@using ExpenseTracker.Dtos
+@using ExpenseTracker.Services
+@using Microsoft.AspNetCore.Identity
+@using MudBlazor.Extensions
+@using System.Globalization
+@using System.Text.RegularExpressions
+@using System.ComponentModel.DataAnnotations
+@rendermode InteractiveServer
+@inject IdentityService IdentityService
+@inject NavigationManager NavigationManager
+@inject NotificationService NotificationService
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider /> 
+<MudSnackbarProvider />
+
+<MudForm @ref="form">
+    <MudTextField T="string" @bind-Value="RegisterData.Email" Label="E-Mail" Variant="Variant.Text" Required="true"
+        RequiredError="Email is required!"
+        Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})">
+    </MudTextField>
+    <MudTextField T="string" @bind-Value="RegisterData.Password" Label="Password" Variant="Variant.Text" Required="true"
+        RequiredError="Password is required!" Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))"
+        InputType="InputType.Password">
+    </MudTextField>
+    <MudTextField T="string" @bind-Value="RegisterData.PasswordConfirm" Label="Confirm password" Variant="Variant.Text"
+        Required="true" RequiredError="Repeat the password!" InputType="InputType.Password" 
+        Validation=@(new Func<string, string>(PasswordMatch))>
+    </MudTextField>
+    <MudText Typo="Typo.body1">Already have an account? <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="BtnLogin_Click">Login</MudButton></MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@BtnRegister_Click">Register</MudButton>
+</MudForm>
+
+
+@code {
+
+    private MudForm form;
+    private RegisterUserData RegisterData = new RegisterUserData();
+
+    private string? PasswordMatch(string arg)
+    {
+        if (RegisterData.Password != arg)
+        {
+            return "Passwords don't match";
+        }
+
+        return null;
+    }
+
+    private List<string> PasswordStrength(string pw)
+    {
+        List<string> errors = new List<string>();
+        if (string.IsNullOrWhiteSpace(pw))
+        {
+            errors.Add("Password is required!");
+            return errors;
+        }
+        if (pw.Length < 6)
+            errors.Add("Password must be at least of length 6");
+
+        if (!Regex.IsMatch(pw, @"[A-Z]"))
+            errors.Add("Password must contain at least one capital letter");
+
+        if (!Regex.IsMatch(pw, @"[a-z]"))
+            errors.Add("Password must contain at least one lowercase letter");
+
+        if (!Regex.IsMatch(pw, @"[0-9]"))
+            errors.Add("Password must contain at least one digit");
+
+        return errors;
+    }
+
+
+    private async Task BtnRegister_Click()
+    {
+        await form.Validate();
+        if (!form.IsValid)
+        {
+            return;
+        }
+
+        var result = await IdentityService.RegisterAsync(RegisterData);
+        if(result.Succeeded){
+            await NotificationService.ShowSuccessAsync("Registration success, you will be redirected to login!");
+            NavigationManager.NavigateTo("Login");
+        }
+        else{
+            await NotificationService.ShowErrorAsync("Registration failed");
+        }
+    }
+
+
+    private void BtnLogin_Click(){
+        NavigationManager.NavigateTo("Login");
+    }
+}

@@ -76,7 +76,7 @@
         // since we validate first
         
         await AccountService.SaveAsync(Account);
-        await NotificationService.ShowSuccess("Account succesfully saved! ");
+        await NotificationService.ShowSuccessAsync("Account succesfully saved! ");
         MudDialog.Close(DialogResult.Ok(result: true));
     }
 

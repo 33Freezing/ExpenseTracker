@@ -1,8 +1,11 @@
 ﻿@page "/"
+@attribute [Authorize]
+
 @using ExpenseTracker.Components.Pages.Dialogs
 @using ExpenseTracker.Database.Models
 @using ExpenseTracker.Dtos
 @using ExpenseTracker.Services
+@using Microsoft.AspNetCore.Authorization
 @using MudBlazor.Extensions
 @using System.Globalization
 

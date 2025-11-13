@@ -127,13 +127,13 @@
 
         if ((await CategoryService.GetAllAsync()).Count == 0)
         {
-            await NotificationService.ShowError("No categories found! Create some then try again!");
+            await NotificationService.ShowErrorAsync("No categories found! Create some then try again!");
             return;
         }
 
         if ((await AccountService.GetAllAsync()).Count == 0)
         {
-            await NotificationService.ShowError("No accounts found! Create some then try again!");
+            await NotificationService.ShowErrorAsync("No accounts found! Create some then try again!");
             return;
         }
 
@@ -166,7 +166,7 @@
         if (!result.Canceled)
         {
             await TransactionService.DeleteAsync(transaction_id);
-            await NotificationService.ShowSuccess("Transaction succesfully deleted! ");
+            await NotificationService.ShowSuccessAsync("Transaction succesfully deleted! ");
             await RefreshPage();
         }
     }

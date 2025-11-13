@@ -102,7 +102,7 @@
 
         if (Categories.Count == 0)
         {
-            await NotificationService.ShowError("No categories found! Create some then try again!");
+            await NotificationService.ShowErrorAsync("No categories found! Create some then try again!");
             MudDialog.Close();
             return;
         }
@@ -114,7 +114,7 @@
         Accounts = await AccountService.GetAllAsync();
         if (Accounts.Count == 0)
         {
-            await NotificationService.ShowError("No accounts found! Create some then try again!");
+            await NotificationService.ShowErrorAsync("No accounts found! Create some then try again!");
             MudDialog.Close();
             return;
         }
@@ -167,7 +167,7 @@
         Transaction.AccountId = Account.Id;
         
         await TransactionService.SaveAsync(Transaction);
-        await NotificationService.ShowSuccess("Transaction succesfully saved! ");
+        await NotificationService.ShowSuccessAsync("Transaction succesfully saved! ");
         MudDialog.Close(DialogResult.Ok(result: true));
     }
 

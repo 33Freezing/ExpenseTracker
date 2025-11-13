@@ -81,7 +81,7 @@
         if (!result.Canceled)
         {
             await AccountService.DeleteAsync(accountId);
-            await NotificationService.ShowSuccess("Account succesfully deleted! ");
+            await NotificationService.ShowSuccessAsync("Account succesfully deleted! ");
             await UpdatePage();
         }
     }
