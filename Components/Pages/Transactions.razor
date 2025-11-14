@@ -1,12 +1,10 @@
 ﻿@page "/transactions"
-@attribute [Authorize]
 @using ExpenseTracker.Components.Pages.Dialogs
 @using ExpenseTracker.Database.Models
 @using ExpenseTracker.Services
 @using Microsoft.AspNetCore.Authorization
 @using MudBlazor.Extensions
 @using System.Globalization
-@rendermode InteractiveServer
 @inject TransactionService TransactionService
 @inject CategoryService CategoryService
 @inject AccountService AccountService 

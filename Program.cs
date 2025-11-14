@@ -29,6 +29,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
+builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<CategoryService>();
@@ -36,6 +37,9 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<SeedDataService>();
 builder.Services.AddScoped<IdentityService>();
+builder.Services.AddScoped<CurrentUserService>();
+
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

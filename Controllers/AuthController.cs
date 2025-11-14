@@ -29,5 +29,12 @@ namespace ExpenseTracker.Controllers
             
             return Redirect("/login?error=true");
         }
+
+        [HttpGet("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await _identityService.LogoutAsync();
+            return Redirect("/login");
+        }
     }
 }

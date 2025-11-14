@@ -8,15 +8,22 @@ namespace ExpenseTracker.Services
     public class AccountService
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly CurrentUserService _currentUserService;
         
-        public AccountService(IDbContextFactory<AppDbContext> contextFactory)
+        public AccountService(IDbContextFactory<AppDbContext> contextFactory, CurrentUserService currentUserService)
         {
             _contextFactory = contextFactory;
+            _currentUserService = currentUserService;
+        }
+
+        private IQueryable<Account> GetAccountsQuery(AppDbContext context)
+        {
+            return context.Accounts.Where(a => a.IdentityUserId == _currentUserService.GetUserId());
         }
         public async Task<List<AccountWithBalance>> GetAllWithBalanceAsync()
         {
             using var context = await _contextFactory.CreateDbContextAsync();
-            return await context.Accounts.Include(a => a.Transactions)
+            return await GetAccountsQuery(context).Include(a => a.Transactions)
             .Select(a => new AccountWithBalance()
             {
                 Id = a.Id,
@@ -29,18 +36,18 @@ namespace ExpenseTracker.Services
         public async Task<List<Account>> GetAllAsync()
         {
             using var context = await _contextFactory.CreateDbContextAsync();
-            return await context.Accounts.ToListAsync();
+            return await GetAccountsQuery(context).ToListAsync();
         }
 
         public async Task<Account> GetAsync(int accountId)
         {
             using var context = await _contextFactory.CreateDbContextAsync();
-            return await context.Accounts.SingleAsync(a => a.Id == accountId);
+            return await GetAccountsQuery(context).SingleAsync(a => a.Id == accountId);
         }
         public async Task<AccountWithBalance> GetWithBalanceAsync(int accountId)
         {
             using var context = await _contextFactory.CreateDbContextAsync();
-            return await context.Accounts
+            return await GetAccountsQuery(context)
             .Include(a => a.Transactions)
             .Select(a => new AccountWithBalance()
             {
@@ -73,11 +80,7 @@ namespace ExpenseTracker.Services
         public async Task DeleteAsync(int accountId)
         {
             using var context = await _contextFactory.CreateDbContextAsync();
-            await context.Transactions
-                .Where(t => t.AccountId == accountId)
-                .ExecuteDeleteAsync();
-
-            await context.Accounts
+            await GetAccountsQuery(context)
                 .Where(a => a.Id == accountId)
                 .ExecuteDeleteAsync();
         }
@@ -85,10 +88,7 @@ namespace ExpenseTracker.Services
         public async Task DeleteAllAsync()
         {
             using var context = await _contextFactory.CreateDbContextAsync();
-            await context.Transactions
-                .ExecuteDeleteAsync();
-                
-            await context.Accounts
+            await GetAccountsQuery(context)
                 .ExecuteDeleteAsync();
         }
     }

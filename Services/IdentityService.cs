@@ -1,4 +1,5 @@
 using ExpenseTracker.Dtos;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 
 namespace ExpenseTracker.Services
@@ -7,13 +8,15 @@ namespace ExpenseTracker.Services
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly AuthenticationStateProvider _authStateProvider;
 
         public IdentityService(
-        UserManager<IdentityUser> userManager,
-        SignInManager<IdentityUser> signInManager)
+        UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
+         AuthenticationStateProvider authStateProvider)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _authStateProvider = authStateProvider;
         }
 
         public async Task<SignInResult> LoginAsync(LoginUserData loginData)
@@ -36,6 +39,11 @@ namespace ExpenseTracker.Services
             };
             
             return await _userManager.CreateAsync(user, registerData.Password);
+        }
+
+        public async Task LogoutAsync()
+        {
+            await _signInManager.SignOutAsync();
         }
     }
 }

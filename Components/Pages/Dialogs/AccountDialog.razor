@@ -1,8 +1,9 @@
-@attribute [Authorize]
 @using ExpenseTracker.Database.Models
 @using ExpenseTracker.Services
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject AccountService AccountService
+@inject CurrentUserService CurrentUserService
 @inject NotificationService NotificationService
 
 <MudDialog>
@@ -77,6 +78,13 @@
 
         // since we validate first
         
+        var userId = CurrentUserService.GetUserId();
+        if(string.IsNullOrWhiteSpace(userId)){
+            await NotificationService.ShowErrorAsync("Server error!");
+            return;
+        }
+
+        Account.IdentityUserId = userId;
         await AccountService.SaveAsync(Account);
         await NotificationService.ShowSuccessAsync("Account succesfully saved! ");
         MudDialog.Close(DialogResult.Ok(result: true));

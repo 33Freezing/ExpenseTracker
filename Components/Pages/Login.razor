@@ -1,11 +1,12 @@
-@page "/login/{error?}"
+@page "/login"
+@attribute [AllowAnonymous]
 @using ExpenseTracker.Components.Pages.Dialogs
 @using ExpenseTracker.Database.Models
 @using ExpenseTracker.Dtos
 @using ExpenseTracker.Services
+@using Microsoft.AspNetCore.Authorization
 @using MudBlazor.Extensions
 @using System.Globalization
-@rendermode InteractiveServer
 @inject NavigationManager NavigationManager
 @inject NotificationService NotificationService
 @inject IdentityService IdentityService
@@ -28,19 +29,20 @@
     <MudText Typo="Typo.body1">No account? <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="BtnRegister_Click">Register</MudButton></MudText>
     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@BtnLogin_Click">Login</MudButton>
 
-    @if(string.IsNullOrWhiteSpace(Error)){
-
+    @if(error){
+        <MudAlert Severity="Severity.Error">Login Failed</MudAlert>
     }
-    <MudText Typo="Typo.body1">@Error</MudText>
     
 </MudForm>
 
 @code{
 
+    [SupplyParameterFromQuery]
     [Parameter]
-    public string Error{get; set;} = "";
+    public bool error {get; set;} = false;
     private MudForm form;
     private LoginUserData LoginData = new LoginUserData();
+
 
 
     private async Task BtnLogin_Click(){

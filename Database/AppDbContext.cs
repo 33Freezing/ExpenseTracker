@@ -16,6 +16,18 @@ namespace Database
         {
             base.OnModelCreating(modelBuilder);
         
+            modelBuilder.Entity<Account>()
+                .HasOne(a => a.IdentityUser)
+                .WithMany()
+                .HasForeignKey(a => a.IdentityUserId)
+                .IsRequired();
+
+            modelBuilder.Entity<Transaction>()
+                .HasOne(t => t.Account)
+                .WithMany(a => a.Transactions)
+                .HasForeignKey(t => t.AccountId)
+                .OnDelete(DeleteBehavior.Cascade);
+                
             modelBuilder.Entity<Transaction>()
                 .Property(t => t.Amount)
                 .HasPrecision(18, 2);

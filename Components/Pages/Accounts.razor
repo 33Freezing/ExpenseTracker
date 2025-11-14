@@ -1,11 +1,9 @@
 @page "/accounts"
-@attribute [Authorize]
 @using ExpenseTracker.Database.Models
 @using ExpenseTracker.Dtos
 @using ExpenseTracker.Services
 @using ExpenseTracker.Components.Pages.Dialogs
 @using Microsoft.AspNetCore.Authorization
-@rendermode InteractiveServer
 @inject AccountService AccountService
 @inject IDialogService DialogService
 @inject NotificationService NotificationService

@@ -1,6 +1,4 @@
 ﻿@page "/"
-@attribute [Authorize]
-
 @using ExpenseTracker.Components.Pages.Dialogs
 @using ExpenseTracker.Database.Models
 @using ExpenseTracker.Dtos
@@ -10,14 +8,12 @@
 @using MudBlazor.Extensions
 @using System.Globalization
 
-@rendermode InteractiveServer
 @inject TransactionService TransactionService
 @inject CategoryService CategoryService
 @inject AccountService AccountService
 @inject IDialogService DialogService
 @inject NotificationService NotificationService
 @inject SeedDataService SeedDataService
-@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <MudThemeProvider />
 <MudPopoverProvider />
@@ -118,6 +114,8 @@
 
 @code {
 
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
     private string username = "";
     private decimal balance = 0;
     private decimal incomeThisMonth = 0;
@@ -126,8 +124,16 @@
     private List<Transaction> latestTransactions = new List<Transaction>();
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        username = authState.User.Identity?.Name ?? "";
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            if (user?.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                username = user.Identity.Name ?? "";
+            }
+        }
 
         List<Transaction> transactions = await TransactionService.GetAllAsync();
         latestTransactions = transactions.OrderByDescending(t => t.Date).Take(5).ToList();

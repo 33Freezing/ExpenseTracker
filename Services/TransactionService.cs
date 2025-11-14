@@ -1,4 +1,5 @@
 using Database;
+using ExpenseTracker.Components.Pages;
 using ExpenseTracker.Database.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,16 +8,22 @@ namespace ExpenseTracker.Services
     public class TransactionService
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly CurrentUserService _currentUserService;
         
-        public TransactionService(IDbContextFactory<AppDbContext> contextFactory)
+        public TransactionService(IDbContextFactory<AppDbContext> contextFactory, CurrentUserService currentUserService)
         {
             _contextFactory = contextFactory;
+            _currentUserService = currentUserService;
         }
 
+        public IQueryable<Transaction> GetTransactionsQuery(AppDbContext context)
+        {
+            return context.Transactions.Include(t => t.Account).Where(t => t.Account.IdentityUserId == _currentUserService.GetUserId());
+        }
         public async Task<List<Transaction>> GetAllAsync()
         {
             using var context = await _contextFactory.CreateDbContextAsync();
-            return await context.Transactions.Include(t => t.Category).OrderByDescending(t => t.Date).ToListAsync();
+            return await GetTransactionsQuery(context).Include(t => t.Category).OrderByDescending(t => t.Date).ToListAsync();
         }
 
         public async Task SaveAsync(Transaction transaction)
@@ -25,6 +32,7 @@ namespace ExpenseTracker.Services
             {
                 transaction.Amount = -transaction.Amount;
             }
+
             
             // otherwise it will try to save the category as well
             transaction.Category = null;
@@ -50,7 +58,7 @@ namespace ExpenseTracker.Services
         public async Task DeleteAsync(int transactionId)
         {
             using var context = await _contextFactory.CreateDbContextAsync();
-            var transaction = await context.Transactions.SingleAsync(t => t.Id == transactionId);
+            var transaction = await GetTransactionsQuery(context).SingleAsync(t => t.Id == transactionId);
             context.Transactions.Remove(transaction);
             await context.SaveChangesAsync();
         }
@@ -58,7 +66,7 @@ namespace ExpenseTracker.Services
         public async Task<Transaction?> GetAsync(int transactionId)
         {
             using var context = await _contextFactory.CreateDbContextAsync();
-            return await context.Transactions.Include(t => t.Category).SingleAsync(t => t.Id == transactionId);
+            return await GetTransactionsQuery(context).Include(t => t.Category).SingleAsync(t => t.Id == transactionId);
         }
     }
 }
