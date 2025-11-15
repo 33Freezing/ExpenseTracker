@@ -27,12 +27,12 @@
             <MudItem xs="12" Class="d-flex justify-center">
                 <MudText Typo="Typo.h4">Transactions</MudText>
             </MudItem>
-            <MudItem xs="12" Class="d-flex justify-center gap-5">
+            <MudItem xs="12" Class="d-flex justify-center gap-5 mb-4 ">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
                     OnClick="@(() => OpenTransactionDialogAsync(null))" StartIcon="@Icons.Material.Filled.Add">Add</MudButton>
                 @if (!string.IsNullOrWhiteSpace(username) && username.ToLower() == "sa")
                 {
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddTestData">Add Test Data
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddTestData" StartIcon="@Icons.Material.Filled.Add">Add Test Data
                     </MudButton>
                 }
             </MudItem>

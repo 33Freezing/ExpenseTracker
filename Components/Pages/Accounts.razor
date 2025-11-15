@@ -34,7 +34,7 @@
                 @foreach(var account in MyAccounts)
                 {
                     <MudItem xs="12" md="6">
-                        <MudCard Outlined="true" Class="pa-2 border-2" Color="Color.Surface">
+                        <MudCard Outlined="true" Class="pa-2 border-2">
                             <MudCardHeader>
                                 <MudText Typo="Typo.h6">@account.Name</MudText>
                             </MudCardHeader>
@@ -46,8 +46,9 @@
                             </MudCardContent>
                             <MudCardActions>
                             <MudPaper Class="pa-1 d-flex flex-grow-1 justify-space-between mt-3" Elevation="0">
-                                <MudButton Class="px-6" Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OpenAccountDialogAsync(account.Id))">Edit</MudButton>
-                                <MudButton Class="px-6" Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => ConfirmDelete(account.Id))">Delete</MudButton>
+                            
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => OpenAccountDialogAsync(account.Id))"></MudIconButton>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => ConfirmDelete(account.Id))"></MudIconButton>
                             </MudPaper>
                             </MudCardActions>
                         </MudCard>

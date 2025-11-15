@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Authorization
 @inject CategoryService CategoryService
 @inject NotificationService NotificationService
+@inject CurrentUserService CurrentUserService
 
 <MudDialog>
     <TitleContent>
@@ -15,7 +16,7 @@
                         <MudTextField @bind-Value="Category.Name" Label="Description" Variant="Variant.Text" Required="true" RequiredError="Name is required!">
                         </MudTextField>
                     }
-                    <MudSelect T="TransactionType" Label="Type" Required="true" @bind-Value="_type"
+                    <MudSelect T="TransactionType" Label="Type" Required="true" @bind-Value="Type"
                         RequiredError="Type is required!">
                         @foreach (TransactionType item in Enum.GetValues(typeof(TransactionType)))
                         {
@@ -40,35 +41,32 @@
     private IMudDialogInstance MudDialog { get; set; }
 
     [Parameter]
-    public int? CategoryId{get; set;}
+    public int? CategoryId {get; set;}
 
-    private TransactionType _type = TransactionType.Expense;
+    [Parameter]
+    public TransactionType Type {get; set;}
     private Category? Category = new();
-    
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
         Category = new Category();
-        _type = Category.Type;
     }
 
-    protected override async Task OnParametersSetAsync(){
-        
-        if (CategoryId == null)
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        if (CategoryId != null)
         {
-            return;
+            Category = await CategoryService.GetAsync((int)CategoryId);
+            if (Category == null)
+            {
+                MudDialog.Close();
+                return;
+            }
+
+            Type = Category.Type;
         }
-
-        Category = await CategoryService.GetAsync((int)CategoryId);
-
-        // if we failed to get the transaction break immediately
-        if (Category == null)
-        {
-            MudDialog.Close();
-            return;
-        }
-
-        _type = Category.Type;
         StateHasChanged();
     }
 
@@ -80,9 +78,17 @@
             return;
         }
 
+
+        var userId = CurrentUserService.GetUserId();
+        if(string.IsNullOrWhiteSpace(userId)){
+            await NotificationService.ShowErrorAsync("Server error!");
+            return;
+        }
+
         // since we validate first
         // we know that _date and _time have values
-        Category.Type = _type;
+        Category.Type = Type;
+        Category.IdentityUserId = userId;
         
         await CategoryService.SaveAsync(Category);
         await NotificationService.ShowSuccessAsync("Category succesfully saved! ");

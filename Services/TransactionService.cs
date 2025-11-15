@@ -62,6 +62,12 @@ namespace ExpenseTracker.Services
             context.Transactions.Remove(transaction);
             await context.SaveChangesAsync();
         }
+
+        public async Task DeleteAllAsync()
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+            await GetTransactionsQuery(context).ExecuteDeleteAsync();
+        }
         
         public async Task<Transaction?> GetAsync(int transactionId)
         {

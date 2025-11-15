@@ -1,4 +1,5 @@
 using ExpenseTracker.Database.Models;
+using ExpenseTracker.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -22,11 +23,24 @@ namespace Database
                 .HasForeignKey(a => a.IdentityUserId)
                 .IsRequired();
 
+            modelBuilder.Entity<Category>()
+                .HasOne(a => a.IdentityUser)
+                .WithMany()
+                .HasForeignKey(a => a.IdentityUserId)
+                .IsRequired();
+
             modelBuilder.Entity<Transaction>()
                 .HasOne(t => t.Account)
                 .WithMany(a => a.Transactions)
                 .HasForeignKey(t => t.AccountId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Transaction>()
+                .HasOne(t => t.Category)
+                .WithMany(a => a.Transactions)
+                .HasForeignKey(t => t.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
                 
             modelBuilder.Entity<Transaction>()
                 .Property(t => t.Amount)
@@ -36,19 +50,6 @@ namespace Database
                 .Property(t => t.InitialBalance)
                 .HasPrecision(18, 2);
 
-            modelBuilder.Entity<Category>().HasData(
-                new Category() { Id = 1, Name = "Groceries", Type=TransactionType.Expense},
-                new Category() { Id = 2, Name = "Eating Out", Type=TransactionType.Expense},
-                new Category() { Id = 3, Name = "Shopping", Type=TransactionType.Expense},
-                new Category() { Id = 4, Name = "Transportation", Type=TransactionType.Expense},
-                new Category() { Id = 5, Name = "Vehicle", Type=TransactionType.Expense},
-                new Category() { Id = 6, Name = "Communication", Type=TransactionType.Expense},
-                new Category() { Id = 7, Name = "Health and Wellness", Type=TransactionType.Expense},
-                new Category() { Id = 8, Name = "Education", Type=TransactionType.Expense},
-                new Category() { Id = 9, Name = "Entertainment", Type=TransactionType.Expense},
-                new Category() { Id = 10, Name = "Pets", Type=TransactionType.Expense},
-                new Category() { Id = 11, Name = "Salary", Type=TransactionType.Income}
-            );
 
             modelBuilder.Entity<IdentityRole>().HasData(new IdentityRole 
             {
@@ -75,6 +76,13 @@ namespace Database
                 RoleId = "1b1c59f2-891f-4732-a974-3b755208d0d9", 
                 UserId = "4e08d54b-16f0-47a0-afaf-afc12dbdedc8"
             });
+
+            var defaultCategories = CategoryService.GetDefaultCategories();
+            foreach(var category in defaultCategories)
+            {
+                category.IdentityUserId = "4e08d54b-16f0-47a0-afaf-afc12dbdedc8";
+            }
+            modelBuilder.Entity<Category>().HasData(defaultCategories);
         }
     }
 }

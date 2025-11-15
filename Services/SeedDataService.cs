@@ -25,44 +25,54 @@ namespace ExpenseTracker.Services
                 return;
             }
 
-            var bankAccount = new Account
+            var accounts = await _accountService.GetAllAsync();
+            if(accounts.Count == 0)
             {
-                Name = "Bank Account",
-                InitialBalance = 2500m,
-                IdentityUserId = userId
-            };
-            var cashAccount = new Account
+                var bankAccount = new Account
+                {
+                    Name = "Bank Account",
+                    InitialBalance = 2500m,
+                    IdentityUserId = userId
+                };
+                var cashAccount = new Account
+                {
+                    Name = "Cash",
+                    InitialBalance = 300m,
+                    IdentityUserId = userId
+                };
+
+                await _accountService.SaveAsync(bankAccount);
+                await _accountService.SaveAsync(cashAccount);
+                accounts = await _accountService.GetAllAsync();
+            }
+            
+            var categories = await _categoryService.GetAllAsync();
+            if(categories.Count == 0)
             {
-                Name = "Cash",
-                InitialBalance = 300m,
-                IdentityUserId = userId
-            };
+                await _categoryService.AssignUserDefaultCategories(userId);
+                categories = await _categoryService.GetAllAsync();
+            }
 
-            await _accountService.DeleteAllAsync();
-
-            await _accountService.SaveAsync(bankAccount);
-            await _accountService.SaveAsync(cashAccount);
+            await _transactionService.DeleteAllAsync();
 
             var random = new Random();
             var transactions = new List<Transaction>();
             var today = DateTime.Today;
-            var categories = await _categoryService.GetAllAsync();
             
-
             for (int i = 0; i < 200; i++)
             {
                 var daysAgo = random.Next(0, 600);
                 var date = today.AddDays(-daysAgo);
-                var accountId = random.Next(0, 2) == 0 ? bankAccount.Id : cashAccount.Id;
 
                 var category = categories[random.Next(categories.Count)];
+                var account = accounts[random.Next(accounts.Count)];
                 var amount = random.Next(0, 300);
 
                 transactions.Add(new Transaction
                 {
                     Amount = amount,
                     Date = date,
-                    AccountId = accountId,
+                    AccountId = account.Id,
                     Category = category,
                     CategoryId = category.Id,
                     Description = GetRandomDescription(random)

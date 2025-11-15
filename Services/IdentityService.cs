@@ -1,3 +1,4 @@
+using ExpenseTracker.Database.Models;
 using ExpenseTracker.Dtos;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -9,14 +10,16 @@ namespace ExpenseTracker.Services
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly AuthenticationStateProvider _authStateProvider;
+        private readonly CategoryService _categoryService;
 
         public IdentityService(
         UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
-         AuthenticationStateProvider authStateProvider)
+         AuthenticationStateProvider authStateProvider, CategoryService categoryService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _authStateProvider = authStateProvider;
+            _categoryService = categoryService;
         }
 
         public async Task<SignInResult> LoginAsync(LoginUserData loginData)
@@ -38,7 +41,14 @@ namespace ExpenseTracker.Services
                 Email = registerData.Email 
             };
             
-            return await _userManager.CreateAsync(user, registerData.Password);
+            var result = await _userManager.CreateAsync(user, registerData.Password);
+            if (!result.Succeeded)
+            {
+                return result;
+            }
+
+            await _categoryService.AssignUserDefaultCategories(user.Id);
+            return result;
         }
 
         public async Task LogoutAsync()
