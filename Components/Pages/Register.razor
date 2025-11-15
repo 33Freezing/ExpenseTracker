@@ -12,28 +12,50 @@
 @inject IdentityService IdentityService
 @inject NavigationManager NavigationManager
 @inject NotificationService NotificationService
+@inject ISnackbar Snackbar
 
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider /> 
 <MudSnackbarProvider />
 
-<MudForm @ref="form">
-    <MudTextField T="string" @bind-Value="RegisterData.Email" Label="E-Mail" Variant="Variant.Text" Required="true"
-        RequiredError="Email is required!"
-        Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})">
-    </MudTextField>
-    <MudTextField T="string" @bind-Value="RegisterData.Password" Label="Password" Variant="Variant.Text" Required="true"
-        RequiredError="Password is required!" Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))"
-        InputType="InputType.Password">
-    </MudTextField>
-    <MudTextField T="string" @bind-Value="RegisterData.PasswordConfirm" Label="Confirm password" Variant="Variant.Text"
-        Required="true" RequiredError="Repeat the password!" InputType="InputType.Password" 
-        Validation=@(new Func<string, string>(PasswordMatch))>
-    </MudTextField>
-    <MudText Typo="Typo.body1">Already have an account? <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="BtnLogin_Click">Login</MudButton></MudText>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@BtnRegister_Click">Register</MudButton>
-</MudForm>
+<MudContainer MaxWidth="MaxWidth.Small" Height="700px" >
+    <MudPaper Class="pa-6 mud-elevation-15" Elevation="1">
+        <MudForm @ref="form">
+            <MudGrid>
+                <MudItem xs="12" Class="d-flex justify-center">
+                    <MudText Typo="Typo.h4">Create an Account</MudText>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField T="string" @bind-Value="RegisterData.Email" Label="E-Mail" Variant="Variant.Text" Required="true"
+                        RequiredError="Email is required!"
+                        Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField T="string" @bind-Value="RegisterData.Password" Label="Password" Variant="Variant.Text" Required="true"
+                        RequiredError="Password is required!" Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))"
+                        InputType="InputType.Password">
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField T="string" @bind-Value="RegisterData.PasswordConfirm" Label="Confirm password" Variant="Variant.Text"
+                        Required="true" RequiredError="Repeat the password!" InputType="InputType.Password" 
+                        Validation=@(new Func<string, string>(PasswordMatch))>
+                    </MudTextField>
+                </MudItem>
+                <MudItem xs="12" Class="d-flex justify-center">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@BtnRegister_Click"  Class="px-20 py-1">Register</MudButton>
+                </MudItem>
+                <MudItem xs="12" Class="d-flex justify-center mt-10">
+                    <MudText Typo="Typo.body1">Already have an account? <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="BtnLogin_Click">Login</MudButton></MudText>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </MudPaper>
+</MudContainer>
+
+    
 
 
 @code {
@@ -85,11 +107,11 @@
 
         var result = await IdentityService.RegisterAsync(RegisterData);
         if(result.Succeeded){
-            await NotificationService.ShowSuccessAsync("Registration success, you will be redirected to login!");
+            Snackbar.Add("Registration success! Redirecting to login.", Severity.Success);
             NavigationManager.NavigateTo("Login");
         }
         else{
-            await NotificationService.ShowErrorAsync("Registration failed");
+            Snackbar.Add("Registration failed! Please try again.", Severity.Error);
         }
     }
 

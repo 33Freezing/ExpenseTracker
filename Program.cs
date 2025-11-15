@@ -3,6 +3,7 @@ using ExpenseTracker.Components;
 using ExpenseTracker.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,19 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/login";
     options.LogoutPath = "/logout";
+});
+
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
+
+    config.SnackbarConfiguration.PreventDuplicates = false;
+    config.SnackbarConfiguration.NewestOnTop = false;
+    config.SnackbarConfiguration.ShowCloseIcon = true;
+    config.SnackbarConfiguration.VisibleStateDuration = 8000;
+    config.SnackbarConfiguration.HideTransitionDuration = 500;
+    config.SnackbarConfiguration.ShowTransitionDuration = 500;
+    config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
 
 builder.Services.AddAuthentication();
