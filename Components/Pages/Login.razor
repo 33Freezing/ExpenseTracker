@@ -10,6 +10,8 @@
 @inject NavigationManager NavigationManager
 @inject NotificationService NotificationService
 @inject IdentityService IdentityService
+@inject ISnackbar Snackbar
+
 
 <MudThemeProvider />
 <MudPopoverProvider />
@@ -18,7 +20,7 @@
 
 
 <MudContainer MaxWidth="MaxWidth.Small" Height="500px" >
-    <MudPaper Class="pa-6 mud-elevation-15" Elevation="1">
+    <MudPaper Class="pa-6 mud-elevation-15">
         <MudForm @ref="form">
             <MudGrid>
                 <MudItem xs="12" Class="d-flex justify-center">
@@ -67,25 +69,15 @@
     private MudForm form;
 
 
-    private bool _errorTimerStarted = false;
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        if (error && !_errorTimerStarted)
+        if (error)
         {
-            _errorTimerStarted = true;
-            await HideErrorAfterDelay(10000);
+            Snackbar.Add("Login failed! Please try again.", Severity.Error);
+            error = false;
         }
     }
-    private async Task HideErrorAfterDelay(int millisecondsDelay)
-    {
-        await Task.Delay(millisecondsDelay);
-        error = false;
-        _errorTimerStarted = false;
-        await InvokeAsync(StateHasChanged);
-    }
-
-
     private async Task BtnLogin_Click(){
         
         await form.Validate();

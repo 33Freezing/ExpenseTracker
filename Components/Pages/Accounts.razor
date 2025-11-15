@@ -7,41 +7,56 @@
 @inject AccountService AccountService
 @inject IDialogService DialogService
 @inject NotificationService NotificationService
+@inject ISnackbar Snackbar
+
 
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider /> 
 <MudSnackbarProvider />
 
-<div class="main-container">
-    <MudText Typo="Typo.h1" Class="title">My Accounts</MudText>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OpenAccountDialogAsync(null))">Add</MudButton>
-
-    @if(MyAccounts == null || MyAccounts.Count == 0){
-        <MudText Typo="Typo.body1">No accounts created yet</MudText>
-    }
-    else{
-        <MudText Typo="Typo.body1">Balance: @MyAccounts.Sum(a => a.CurrentBalance)</MudText>
-        <div class="accounts-container">
-            @foreach(var account in MyAccounts){
-                <MudCard Outlined="true">
-                <MudCardHeader>
-                    <MudText Typo="Typo.h2" Class="card-title">@account.Name</MudText>
-                </MudCardHeader>
-                    <MudCardContent>
-                        <MudText Typo="Typo.body1">Balance: @account.CurrentBalance</MudText>
-                    </MudCardContent>
-                    <MudCardActions>
-                    <div style="display: flex; gap: 1rem;">
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OpenAccountDialogAsync(account.Id))">Edit</MudButton>
-                        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => ConfirmDelete(account.Id))">Delete</MudButton>
-                    </div>
-                    </MudCardActions>
-                </MudCard>
+<MudContainer MaxWidth="MaxWidth.Medium">
+    <MudPaper Elevation="1" Class="pa-6 mud-elevation-15">
+        <MudGrid>
+            <MudItem xs="12" Class="d-flex justify-center">
+                <MudText Typo="Typo.h4">My Accounts</MudText>
+            </MudItem>
+            <MudItem xs="12" Class="mb-4 d-flex justify-center">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OpenAccountDialogAsync(null))" StartIcon="@Icons.Material.Filled.Add">Add</MudButton>
+            </MudItem>
+            @if(MyAccounts == null || MyAccounts.Count == 0){
+                <MudItem xs="12">
+                    <MudText Typo="Typo.body1">No accounts created yet</MudText>
+                </MudItem>
             }
-        </div>
-    }
-</div>
+            else{
+                @foreach(var account in MyAccounts)
+                {
+                    <MudItem xs="12" md="6">
+                        <MudCard Outlined="true" Class="pa-2 border-2" Color="Color.Surface">
+                            <MudCardHeader>
+                                <MudText Typo="Typo.h6">@account.Name</MudText>
+                            </MudCardHeader>
+                            <MudCardContent>
+                            <MudPaper Elevation="0">
+                                <MudText Style="font-size: 18px;">Balance:  </MudText>
+                                <MudText Typo="Typo.h4">@account.CurrentBalance.ToString("C2")</MudText>
+                            </MudPaper>
+                            </MudCardContent>
+                            <MudCardActions>
+                            <MudPaper Class="pa-1 d-flex flex-grow-1 justify-space-between mt-3" Elevation="0">
+                                <MudButton Class="px-6" Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OpenAccountDialogAsync(account.Id))">Edit</MudButton>
+                                <MudButton Class="px-6" Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => ConfirmDelete(account.Id))">Delete</MudButton>
+                            </MudPaper>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                }
+            }
+        </MudGrid>
+    </MudPaper>
+</MudContainer>
+
 
 @code{
     private List<AccountWithBalance> MyAccounts;
