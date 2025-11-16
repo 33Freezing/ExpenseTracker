@@ -3,26 +3,26 @@
 @using ExpenseTracker.Services
 @using Microsoft.AspNetCore.Authorization
 @inject CategoryService CategoryService
-@inject NotificationService NotificationService
 @inject CurrentUserService CurrentUserService
 @inject ISnackbar Snackbar
 
-<MudDialog>
-    <TitleContent>
-        <MudText Typo="Typo.h5">
-            @(CategoryId == null ? "Add Category" : "Edit Category")
-        </MudText>
-    </TitleContent>
-    <DialogContent>
-    @if(CategoryDto is not null){
+@if (CategoryDto is not null)
+{
+    <MudDialog>
+        <TitleContent>
+            <MudText Typo="Typo.h5">
+                @(CategoryId == null ? "Add Category" : "Edit Category")
+            </MudText>
+        </TitleContent>
+        <DialogContent>
             <MudGrid>
                 <MudItem xs="12">
                     <MudForm @ref="form">
-                        <MudTextField @bind-Value="CategoryDto.Name" Label="Name" 
-                            Variant="Variant.Outlined" Required="true" RequiredError="Name is required!">
+                        <MudTextField @bind-Value="CategoryDto.Name" Label="Name" Variant="Variant.Outlined" Required="true"
+                            RequiredError="Name is required!">
                         </MudTextField>
-                        <MudSelect @bind-Value="CategoryDto.Type" Label="Type"
-                            Variant="Variant.Outlined" Required="true" RequiredError="Type is required!" Class="mt-4">
+                        <MudSelect @bind-Value="CategoryDto.Type" Label="Type" Variant="Variant.Outlined" Required="true"
+                            RequiredError="Type is required!" Class="mt-4">
                             @foreach (TransactionType? item in Enum.GetValues(typeof(TransactionType)))
                             {
                                 <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -34,10 +34,10 @@
                     <MudButton OnClick="Cancel" Variant="Variant.Outlined">Cancel</MudButton>
                     <MudButton OnClick="Submit" Color="Color.Primary" Variant="Variant.Filled">Save</MudButton>
                 </MudItem>
-            </MudGrid>  
-        }
-    </DialogContent>
-</MudDialog>
+            </MudGrid>
+        </DialogContent>
+    </MudDialog>
+}
 
 @code {
     MudForm form;
@@ -46,23 +46,25 @@
     private IMudDialogInstance MudDialog { get; set; }
 
     [Parameter]
-    public int? CategoryId {get; set;}
+    public int? CategoryId { get; set; }
 
     [Parameter]
-    public TransactionType? Type {get; set;}
-    private CategoryDto CategoryDto {get; set;}
+    public TransactionType? Type { get; set; }
+    private CategoryDto CategoryDto { get; set; }
 
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
         CategoryDto = new CategoryDto();
-        if(Type != null){
+        if (Type != null)
+        {
             CategoryDto.Type = Type;
         }
 
         var userId = CurrentUserService.GetUserId();
-        if(string.IsNullOrWhiteSpace(userId)){
+        if (string.IsNullOrWhiteSpace(userId))
+        {
             Snackbar.Add("Server error! Please try again.", Severity.Error);
             MudDialog.Close();
             return;
@@ -81,7 +83,8 @@
             return;
         }
 
-        CategoryDto = new CategoryDto(){
+        CategoryDto = new CategoryDto()
+        {
             Id = category.Id,
             Name = category.Name,
             Type = category.Type,
@@ -89,7 +92,7 @@
         };
     }
 
-    private async void Submit()
+    private async Task Submit()
     {
         await form.Validate();
         if (!form.IsValid)
@@ -97,14 +100,6 @@
             StateHasChanged();
             return;
         }
-
-
-        var userId = CurrentUserService.GetUserId();
-        if(string.IsNullOrWhiteSpace(userId)){
-            await NotificationService.ShowErrorAsync("Server error!");
-            return;
-        }
-
 
         await CategoryService.SaveAsync(CategoryDto);
         var message = CategoryId == null ? "Category successfully added!" : "Category successfully updated!";

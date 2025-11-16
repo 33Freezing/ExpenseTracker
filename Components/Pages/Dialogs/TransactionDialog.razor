@@ -1,75 +1,73 @@
 @using ExpenseTracker.Database.Models
+@using ExpenseTracker.Dtos
 @using ExpenseTracker.Services
 @using Microsoft.AspNetCore.Authorization
 @inject TransactionService TransactionService
 @inject CategoryService CategoryService
 @inject AccountService AccountService
-@inject NotificationService NotificationService
+@inject ISnackbar Snackbar
 
-<MudDialog>
-    <TitleContent>
-        Transaction
-    </TitleContent>
-    <DialogContent>
-            <MudForm @ref="form">
-                <div style="display: flex; flex-direction: column; gap: 1rem; min-width: 350px;">
-                @if(Account is not null){
-                        <MudSelect @bind-Value="Account.Id" Label="Account" Required="true"
-                            RequiredError="Account is required!">
+@if (TransactionDto is not null)
+{
+    <MudDialog>
+        <TitleContent>
+            <MudText Typo="Typo.h5">
+                @(TransactionId == null ? "Add Transaction" : "Edit Transaction")
+            </MudText>
+        </TitleContent>
+        <DialogContent>
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudForm @ref="form">
+                        <MudSelect @bind-Value="TransactionDto.AccountId" Label="Account" Variant="Variant.Outlined"
+                            Required="true" RequiredError="Account is required!">
                             @foreach (var account in Accounts)
                             {
-                                <MudSelectItem Value="@account.Id">@account.Name</MudSelectItem>
+                                <MudSelectItem Value="@((int?)account.Id)">@account.Name</MudSelectItem>
                             }
                         </MudSelect>
-                    }
-
-                    <MudSelect T="TransactionType" Label="Type" Required="true" @bind-Value="_type"
-                        RequiredError="Type of transaction is required!" @bind-Value:after="this.TransactionTypeChanged">
-                        @foreach (TransactionType item in Enum.GetValues(typeof(TransactionType)))
-                        {
-                            <MudSelectItem Value="@item">@item</MudSelectItem>
-                        }
-                    </MudSelect>
-                    
-                    @if(Transaction is not null){
-                        <MudNumericField @bind-Value="Transaction.Amount" Label="Amount" Variant="Variant.Text" Required="true"
-                            RequiredError="Amount is required!">
-                        </MudNumericField>
-                    }
-
-                    @if(Category is not null){
-                        <MudSelect @bind-Value="Category.Id" Label="Category" Required="true"
-                            RequiredError="Category is required!">
+                        <MudSelect @bind-Value="TransactionDto.TransactionType" Label="Type" Variant="Variant.Outlined"
+                            Required="true" RequiredError="Type of transaction is required!"
+                            @bind-Value:after="this.TransactionTypeChanged">
+                            @foreach (TransactionType? item in Enum.GetValues(typeof(TransactionType)))
+                            {
+                                <MudSelectItem Value="@((TransactionType?)item)">@item</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSelect @bind-Value="TransactionDto.CategoryId" Label="Category" Variant="Variant.Outlined"
+                            Required="true" RequiredError="Category is required!">
                             @foreach (var category in Categories)
                             {
-                                <MudSelectItem Value="@category.Id">@category.Name</MudSelectItem>
+                                <MudSelectItem Value="@((int?)category.Id)">@category.Name</MudSelectItem>
                             }
                         </MudSelect>
-                    }
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        @if(_date is not null){
-                            <MudDatePicker Label="Date" @bind-Date="_date" Required="true" RequiredError="Date is required!" />
-                        }
-                        @if(_time is not null){
-                            <MudTimePicker Label="Time" AmPm="true" @bind-Time="_time" RequiredError="Time is required!" />
-                        }
-                    </div>
+                        <MudNumericField @bind-Value="TransactionDto.Amount" Label="Amount" Variant="Variant.Outlined"
+                            Required="true" RequiredError="Amount is required!" Format="C2">
+                        </MudNumericField>
+                        <MudPaper Elevation="0" Class="d-flex gap-2">
+                            <MudDatePicker @bind-Date="TransactionDto.Date" Label="Date" Variant="Variant.Outlined"
+                                Required="true" RequiredError="Date is required!" />
 
-                    @if(Transaction is not null){
-                        <MudTextField @bind-Value="Transaction.Description" Label="Description" Variant="Variant.Text">
+                            <MudTimePicker @bind-Time="TransactionDto.Time" Label="Time" Variant="Variant.Outlined"
+                                AmPm="true" Required="true" RequiredError="Time is required!" />
+                        </MudPaper>
+
+                        <MudTextField @bind-Value="TransactionDto.Description" Label="Description"
+                            Variant="Variant.Outlined">
                         </MudTextField>
-                    }
-                </div>
-            </MudForm>
-    </DialogContent>
-    <DialogActions>
-        <div style="display: flex; flex-direction: row; gap: 1rem;">
-            <MudButton Color="Color.Primary" OnClick="Submit">Save</MudButton>
-            <MudButton OnClick="Cancel">Cancel</MudButton>
-        </div>
-    </DialogActions>
-</MudDialog>
+
+                    </MudForm>
+                </MudItem>
+                <MudItem xs="12" Class="d-flex justify-end gap-2 mt-6">
+                    <MudButton OnClick="Cancel" Variant="Variant.Outlined">Cancel</MudButton>
+                    <MudButton OnClick="Submit" Color="Color.Primary" Variant="Variant.Filled">Save</MudButton>
+                </MudItem>
+            </MudGrid>
+
+        </DialogContent>
+    </MudDialog>
+}
 
 @code {
     MudForm form;
@@ -79,106 +77,94 @@
 
     [Parameter]
     public int? TransactionId { get; set; }
+    private List<Category> Categories { get; set; }
+    private List<Account> Accounts { get; set; }
+    private TransactionDto TransactionDto { get; set; }
 
-
-    private DateTime? _date = DateTime.Now;
-    private TimeSpan? _time = DateTime.Now.Date.TimeOfDay;
-
-    private TransactionType _type = TransactionType.Expense;
-    private Transaction Transaction = new();
-    private Category Category = new();
-    private List<Category> Categories = new List<Category>();
-
-    private Account Account = new();
-    private List<Account> Accounts = new List<Account>();
-
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        Transaction = new Transaction();
-        Transaction.Date = DateTime.Now;
-        Transaction.Amount = 0;
 
+        await base.OnParametersSetAsync();
         Categories = await CategoryService.GetAllAsync();
-        // no point making transaction if we don't have any categories
-
         if (Categories.Count == 0)
         {
-            await NotificationService.ShowErrorAsync("No categories found! Create some then try again!");
+            Snackbar.Add("No categories found! Create some then try again!", Severity.Error);
             MudDialog.Close();
             return;
         }
-
-        Category = new Category();
-        Category = Categories.First();
-
 
         Accounts = await AccountService.GetAllAsync();
         if (Accounts.Count == 0)
         {
-            await NotificationService.ShowErrorAsync("No accounts found! Create some then try again!");
+            Snackbar.Add("No accounts found! Create some then try again!", Severity.Error);
             MudDialog.Close();
             return;
         }
 
-        Account = new Account();
-        Account = Accounts.First();
-        
-        _type = Category.Type;
-        _date = Transaction.Date.Date;
-        _time = Transaction.Date.TimeOfDay;
-    }
+        TransactionDto = new TransactionDto();
+        TransactionDto.AccountId = Accounts.First().Id;
+        TransactionDto.CategoryId = Categories.First().Id;
+        TransactionDto.TransactionType = Categories.First().Type;
+        TransactionDto.Date = DateTime.Now;
+        TransactionDto.Time = DateTime.Now.TimeOfDay;
+        TransactionDto.Amount = 0;
 
-    protected override async Task OnParametersSetAsync(){
-        
-        if (TransactionId == null)
+        if (TransactionId != null)
         {
-            return;
+            var transaction = await TransactionService.GetAsync((int)TransactionId);
+            if (transaction == null)
+            {
+                Snackbar.Add("Server error! Please try again.", Severity.Error);
+                MudDialog.Close();
+                return;
+            }
+
+            TransactionDto = new TransactionDto()
+            {
+                Id = transaction.Id,
+                Amount = transaction.Amount,
+                AccountId = transaction.AccountId,
+                CategoryId = transaction.CategoryId,
+                Date = transaction.Date.Date,
+                Time = transaction.Date.TimeOfDay,
+                Description = transaction.Description,
+                TransactionType = transaction.Category.Type
+            };
         }
 
-        Transaction = await TransactionService.GetAsync((int)TransactionId);
 
-        // if we failed to get the transaction break immediately
-        if (Transaction == null)
-        {
-            MudDialog.Close();
-            return;
-        }
-        Category = Transaction.Category;
-
-        _type = Category.Type;
-        _date = Transaction.Date.Date;
-        _time = Transaction.Date.TimeOfDay;
-        Categories = Categories.Where(c => c.Type == Category.Type).ToList();
-        StateHasChanged();
+        Categories = Categories.Where(c => c.Type == TransactionDto.TransactionType).ToList();
     }
 
-    private async void Submit()
+    private async Task Submit()
     {
         await form.Validate();
         if (!form.IsValid)
         {
+            StateHasChanged();
             return;
         }
 
-        // since we validate first
-        // we know that _date and _time have values
-        Transaction.Date = (DateTime)(_date + _time);
-        Transaction.CategoryId = Category.Id;
-        Transaction.Category = Category;
-        Transaction.AccountId = Account.Id;
-        
-        await TransactionService.SaveAsync(Transaction);
-        await NotificationService.ShowSuccessAsync("Transaction succesfully saved! ");
+        await TransactionService.SaveAsync(TransactionDto);
+        var message = TransactionId == null ? "Transaction successfully added!" : "Transaction successfully updated!";
+        Snackbar.Add(message, Severity.Success);
         MudDialog.Close(DialogResult.Ok(result: true));
     }
 
     private void Cancel() => MudDialog.Cancel();
 
-    private async void TransactionTypeChanged()
+    private async Task TransactionTypeChanged()
     {
         Categories = await CategoryService.GetAllAsync();
-        Categories = Categories.Where(c => c.Type == _type).ToList();
-        Category = Categories.First();
-        StateHasChanged();
+        Categories = Categories.Where(c => c.Type == TransactionDto.TransactionType).ToList();
+        
+        if (Categories.Count == 0)
+        {
+            TransactionDto.CategoryId = null;
+            Snackbar.Add("No categories for this transaction type!", Severity.Warning);
+            return;
+        }
+        
+        TransactionDto.CategoryId = Categories.First().Id;
     }
 }

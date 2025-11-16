@@ -53,7 +53,6 @@ builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<CategoryService>();
-builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<SeedDataService>();
 builder.Services.AddScoped<IdentityService>();

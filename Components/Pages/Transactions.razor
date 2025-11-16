@@ -11,7 +11,7 @@
 @inject CategoryService CategoryService
 @inject AccountService AccountService
 @inject IDialogService DialogService
-@inject NotificationService NotificationService
+@inject ISnackbar Snackbar
 @inject SeedDataService SeedDataService
 
 <MudThemeProvider />
@@ -196,23 +196,26 @@
 
         if ((await CategoryService.GetAllAsync()).Count == 0)
         {
-            await NotificationService.ShowErrorAsync("No categories found! Create some then try again!");
+            Snackbar.Add("No categories found! Create some then try again!", Severity.Error);
             return;
         }
 
         if ((await AccountService.GetAllAsync()).Count == 0)
         {
-            await NotificationService.ShowErrorAsync("No accounts found! Create some then try again!");
+            Snackbar.Add("No accounts found! Create some then try again!", Severity.Error);
             return;
         }
 
-
-
-        var options = new DialogOptions { CloseOnEscapeKey = true, };
+        var options = new DialogOptions { 
+            CloseOnEscapeKey = true, 
+            NoHeader=false, 
+            CloseButton=true, 
+            MaxWidth=MaxWidth.Medium  
+        };
         var parameters = new DialogParameters<TransactionDialog>
-{
-{ x => x.TransactionId, transaction_id }
-};
+        {
+            { x => x.TransactionId, transaction_id }
+        };
 
         var dialog = await DialogService.ShowAsync<TransactionDialog>(title: "Simple Dialog", parameters, options);
         var result = await dialog.Result;
@@ -235,7 +238,7 @@
         if (!result.Canceled)
         {
             await TransactionService.DeleteAsync(transaction_id);
-            await NotificationService.ShowSuccessAsync("Transaction succesfully deleted! ");
+            Snackbar.Add("Transaction succesfully deleted! ", Severity.Success);
             await RefreshPage();
         }
     }

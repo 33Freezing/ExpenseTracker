@@ -7,23 +7,24 @@
 @inject CurrentUserService CurrentUserService
 @inject ISnackbar Snackbar
 
-<MudDialog>
-    <TitleContent>
-        <MudText Typo="Typo.h5">
-            @(AccountId == null ? "Add Account" : "Edit Account")
-        </MudText>
-    </TitleContent>
-    <DialogContent>
-        @if(AccountDto is not null){
+@if (AccountDto is not null)
+{
+    <MudDialog>
+        <TitleContent>
+            <MudText Typo="Typo.h5">
+                @(AccountId == null ? "Add Account" : "Edit Account")
+            </MudText>
+        </TitleContent>
+        <DialogContent>
             <MudGrid>
                 <MudItem xs="12">
                     <MudForm @ref="form">
-                        <MudTextField @bind-Value="AccountDto.Name" Label="Name" 
-                        Variant="Variant.Outlined" Required="true" RequiredError="Name is required!">
+                        <MudTextField @bind-Value="AccountDto.Name" Label="Name" Variant="Variant.Outlined" Required="true"
+                            RequiredError="Name is required!">
                         </MudTextField>
-                        <MudNumericField @bind-Value="AccountDto.InitialBalance" Label="Initial Balance" 
-                        Variant="Variant.Outlined" Required="true" RequiredError="Initial balace is required!" Format="C2"
-                        Class="mt-4">
+                        <MudNumericField @bind-Value="AccountDto.InitialBalance" Label="Initial Balance"
+                            Variant="Variant.Outlined" Required="true" RequiredError="Initial balace is required!"
+                            Format="C2" Class="mt-4">
                         </MudNumericField>
                     </MudForm>
                 </MudItem>
@@ -31,10 +32,10 @@
                     <MudButton OnClick="Cancel" Variant="Variant.Outlined">Cancel</MudButton>
                     <MudButton OnClick="Submit" Color="Color.Primary" Variant="Variant.Filled">Save</MudButton>
                 </MudItem>
-            </MudGrid>  
-        }
-    </DialogContent>
-</MudDialog>
+            </MudGrid>
+        </DialogContent>
+    </MudDialog>
+}
 
 @code {
     MudForm form;
@@ -44,16 +45,17 @@
 
     [Parameter]
     public int? AccountId { get; set; }
-    private AccountDto AccountDto {get; set; }
+    private AccountDto AccountDto { get; set; }
 
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
         AccountDto = new AccountDto();
-        
+
         var userId = CurrentUserService.GetUserId();
-        if(string.IsNullOrWhiteSpace(userId)){
+        if (string.IsNullOrWhiteSpace(userId))
+        {
             Snackbar.Add("Server error! Please try again.", Severity.Error);
             MudDialog.Close();
             return;
@@ -63,7 +65,7 @@
         {
             return;
         }
-        
+
         var account = await AccountService.GetAsync((int)AccountId);
         if (account == null)
         {
@@ -72,7 +74,8 @@
             return;
         }
 
-        AccountDto = new AccountDto(){
+        AccountDto = new AccountDto()
+        {
             Id = account.Id,
             Name = account.Name,
             InitialBalance = account.InitialBalance,
