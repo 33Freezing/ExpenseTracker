@@ -58,9 +58,24 @@ namespace ExpenseTracker.Services
             }).SingleAsync(a => a.Id == accountId);
         }
 
-        public async Task SaveAsync(Account account)
+        public async Task SaveAsync(AccountDto accountDto)
         {
+            if(string.IsNullOrWhiteSpace(accountDto.Name) ||
+                string.IsNullOrWhiteSpace(accountDto.UserId) ||
+                accountDto.InitialBalance == null)
+            {
+                return;
+            }
+
             using var context = await _contextFactory.CreateDbContextAsync();
+            var account = new Account
+            {
+                Id = accountDto.Id ?? 0,
+                Name = accountDto.Name,
+                InitialBalance = (decimal)accountDto.InitialBalance,
+                IdentityUserId = accountDto.UserId
+            };
+
             if (account.Id == 0)
             {
                 await context.Accounts.AddAsync(account);

@@ -46,7 +46,6 @@
                             </MudCardContent>
                             <MudCardActions>
                             <MudPaper Class="pa-1 d-flex flex-grow-1 justify-space-between mt-3" Elevation="0">
-                            
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => OpenAccountDialogAsync(account.Id))"></MudIconButton>
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => ConfirmDelete(account.Id))"></MudIconButton>
                             </MudPaper>
@@ -69,8 +68,15 @@
         await base.OnInitializedAsync();
     }
 
-    private async Task OpenAccountDialogAsync(int? accountId){
-        var options = new DialogOptions { CloseOnEscapeKey = true, };
+    private async Task OpenAccountDialogAsync(int? accountId)
+    {
+        var options = new DialogOptions { 
+            CloseOnEscapeKey = true, 
+            NoHeader=true, 
+            CloseButton=true, 
+            MaxWidth=MaxWidth.Medium  
+        };
+
         var parameters = new DialogParameters<AccountDialog>
         {
             { x => x.AccountId, accountId }
@@ -93,7 +99,7 @@
             { x => x.Message,  "Are you sure you want to delete the account and the related transactions? " }
         };
 
-        var dialog = await DialogService.ShowAsync<ConfirmDialog>(title: "Warning", parameters, options);
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>(title: "", parameters, options);
         var result = await dialog.Result;
         if (!result.Canceled)
         {

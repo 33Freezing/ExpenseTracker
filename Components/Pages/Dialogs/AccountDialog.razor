@@ -1,38 +1,40 @@
 @using ExpenseTracker.Database.Models
+@using ExpenseTracker.Dtos
 @using ExpenseTracker.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AccountService AccountService
 @inject CurrentUserService CurrentUserService
 @inject NotificationService NotificationService
+@inject ISnackbar Snackbar
 
 <MudDialog>
-    <TitleContent>
-        Account
-    </TitleContent>
     <DialogContent>
-            <MudForm @ref="form">
-                <div style="display: flex; flex-direction: column; gap: 1rem; min-width: 350px;">
-                    
-                    @if(Account is not null){
-                        <MudTextField @bind-Value="Account.Name" Label="Name" Variant="Variant.Text">
+        @if(AccountDto is not null){
+            <MudGrid>
+                <MudItem xs="12" Class="d-flex justify-center my-4">
+                    <MudText Typo="Typo.h5">
+                        @(AccountId == null ? "Add Account" : "Edit Account")
+                    </MudText>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudForm @ref="form">
+                        <MudTextField @bind-Value="AccountDto.Name" Label="Name" 
+                        Variant="Variant.Outlined" Required="true" RequiredError="Name is required!">
                         </MudTextField>
-                    }
-
-                    @if(Account is not null){
-                        <MudNumericField @bind-Value="Account.InitialBalance" Label="Initial Balance" Variant="Variant.Text" Required="true"
-                            RequiredError="Initial balace is required!">
+                        <MudNumericField @bind-Value="AccountDto.InitialBalance" Label="Initial Balance" 
+                        Variant="Variant.Outlined" Required="true" RequiredError="Initial balace is required!" Format="C2"
+                        Class="mt-4">
                         </MudNumericField>
-                    }
-                </div>
-            </MudForm>
+                    </MudForm>
+                </MudItem>
+                <MudItem xs="12" Class="d-flex justify-end gap-2 mt-6">
+                    <MudButton OnClick="Cancel" Variant="Variant.Outlined">Cancel</MudButton>
+                    <MudButton OnClick="Submit" Color="Color.Primary" Variant="Variant.Filled">Save</MudButton>
+                </MudItem>
+            </MudGrid>  
+        }
     </DialogContent>
-    <DialogActions>
-        <div style="display: flex; flex-direction: row; gap: 1rem;">
-            <MudButton Color="Color.Primary" OnClick="Submit">Save</MudButton>
-            <MudButton OnClick="Cancel">Cancel</MudButton>
-        </div>
-    </DialogActions>
 </MudDialog>
 
 @code {
@@ -43,50 +45,54 @@
 
     [Parameter]
     public int? AccountId { get; set; }
-    private Account Account {get; set; }
-    
-    protected override async Task OnInitializedAsync()
-    {
-        Account = new Account();
-    }
+    private AccountDto AccountDto {get; set; }
 
-    protected override async Task OnParametersSetAsync(){
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        AccountDto = new AccountDto();
         
+        var userId = CurrentUserService.GetUserId();
+        if(string.IsNullOrWhiteSpace(userId)){
+            Snackbar.Add("Server error! Please try again.", Severity.Error);
+            MudDialog.Close();
+            return;
+        }
+        AccountDto.UserId = userId;
         if (AccountId == null)
         {
             return;
         }
-
-        Account = await AccountService.GetAsync((int)AccountId);
-
-        // if we failed to get the transaction break immediately
-        if (Account == null)
+        
+        var account = await AccountService.GetAsync((int)AccountId);
+        if (account == null)
         {
+            Snackbar.Add("Server error! Please try again.", Severity.Error);
             MudDialog.Close();
             return;
         }
-        StateHasChanged();
+
+        AccountDto = new AccountDto(){
+            Id = account.Id,
+            Name = account.Name,
+            InitialBalance = account.InitialBalance,
+            UserId = account.IdentityUserId
+        };
     }
 
-    private async void Submit()
+    private async Task Submit()
     {
         await form.Validate();
         if (!form.IsValid)
         {
+            StateHasChanged();
             return;
         }
 
-        // since we validate first
-        
-        var userId = CurrentUserService.GetUserId();
-        if(string.IsNullOrWhiteSpace(userId)){
-            await NotificationService.ShowErrorAsync("Server error!");
-            return;
-        }
-
-        Account.IdentityUserId = userId;
-        await AccountService.SaveAsync(Account);
-        await NotificationService.ShowSuccessAsync("Account succesfully saved! ");
+        await AccountService.SaveAsync(AccountDto);
+        var message = AccountId == null ? "Account successfully added!" : "Account successfully updated!";
+        Snackbar.Add(message, Severity.Success);
         MudDialog.Close(DialogResult.Ok(result: true));
     }
 

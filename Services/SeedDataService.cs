@@ -1,4 +1,5 @@
 using ExpenseTracker.Database.Models;
+using ExpenseTracker.Dtos;
 using ExpenseTracker.Services;
 
 namespace ExpenseTracker.Services
@@ -28,17 +29,17 @@ namespace ExpenseTracker.Services
             var accounts = await _accountService.GetAllAsync();
             if(accounts.Count == 0)
             {
-                var bankAccount = new Account
+                var bankAccount = new AccountDto
                 {
                     Name = "Bank Account",
                     InitialBalance = 2500m,
-                    IdentityUserId = userId
+                    UserId = userId
                 };
-                var cashAccount = new Account
+                var cashAccount = new AccountDto
                 {
                     Name = "Cash",
                     InitialBalance = 300m,
-                    IdentityUserId = userId
+                    UserId = userId
                 };
 
                 await _accountService.SaveAsync(bankAccount);

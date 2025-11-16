@@ -1,3 +1,4 @@
+using System.Globalization;
 using Database;
 using ExpenseTracker.Components;
 using ExpenseTracker.Services;
@@ -7,6 +8,11 @@ using MudBlazor;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+var culture = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
 
 builder.Services.AddControllers();
 
