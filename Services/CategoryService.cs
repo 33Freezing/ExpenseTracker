@@ -1,18 +1,19 @@
-using Database;
+using ExpenseTracker.Database;
 using ExpenseTracker.Database.Models;
 using ExpenseTracker.Dtos;
+using ExpenseTracker.Migrations;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Services
 {
     public class CategoryService
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly AppDbContext _context;
         private readonly CurrentUserService _currentUserService;
         
-        public CategoryService(IDbContextFactory<AppDbContext> contextFactory, CurrentUserService currentUserService)
+        public CategoryService(AppDbContext context, CurrentUserService currentUserService)
         {
-            _contextFactory = contextFactory;
+            _context = context;
             _currentUserService = currentUserService;
         }
 
@@ -22,26 +23,32 @@ namespace ExpenseTracker.Services
         }
         public async Task<List<Category>> GetAllAsync()
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
-            return await GetCategoriesQuery(context).OrderBy(t => t.Id).ToListAsync();
+            return await GetCategoriesQuery(_context).OrderBy(t => t.Id).ToListAsync();
         }
         public async Task<List<Category>> GetAllWithTransactionsAsync()
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
-            return await GetCategoriesQuery(context).Include(c => c.Transactions).OrderBy(t => t.Id).ToListAsync();
+            return await GetCategoriesQuery(_context).Include(c => c.Transactions).OrderBy(t => t.Id).ToListAsync();
         }
 
         public async Task<Category?> GetAsync(int categoryId)
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
-            return await GetCategoriesQuery(context).SingleAsync(c => c.Id == categoryId);
+            return await GetCategoriesQuery(_context).SingleAsync(c => c.Id == categoryId);
         }
 
         public async Task DeleteAsync(int categoryId)
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
-            await context.Transactions.Where(t => t.CategoryId == categoryId).ExecuteDeleteAsync();
-            await GetCategoriesQuery(context).Where(c => c.Id == categoryId).ExecuteDeleteAsync();
+            await _context.Transactions.Where(t => t.CategoryId == categoryId).ExecuteDeleteAsync();
+            await GetCategoriesQuery(_context).Where(c => c.Id == categoryId).ExecuteDeleteAsync();
+        }
+
+        public async Task DeleteAllAsync()
+        {
+            var categoryIds = await GetCategoriesQuery(_context).Select(c => c.Id).ToListAsync();
+            foreach(var categoryId in categoryIds)
+            {
+                await _context.Transactions.Where(t => t.CategoryId == categoryId).ExecuteDeleteAsync();
+            }
+            await GetCategoriesQuery(_context).ExecuteDeleteAsync();
         }
 
         
@@ -70,20 +77,19 @@ namespace ExpenseTracker.Services
 
         private async Task InternalSave(Category category)
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
             if (category.Id == 0)
             {
-                await context.Categories.AddAsync(category);
+                await _context.Categories.AddAsync(category);
             }
             else
             {
-                var oldCategory = await context.Categories.SingleAsync(t => t.Id == category.Id);
+                var oldCategory = await _context.Categories.SingleAsync(t => t.Id == category.Id);
                 if (oldCategory != null)
                 {
-                    context.Entry(oldCategory).CurrentValues.SetValues(category);
+                    _context.Entry(oldCategory).CurrentValues.SetValues(category);
                 }
             }
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
 

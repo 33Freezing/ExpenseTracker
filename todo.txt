@@ -1,24 +1,16 @@
 - clear filters button on transactions
-- check out a loading panel
 
-- gotta fix up the shit login loop
-
-- seed koji izbrise sve account, categories i transakcije
-- add tags for transationcs
-- add crud for tags
 - filters multi select transactions
 - look good on mobile
 - change order of income/expense for transaction dialog
+- fix top expenses graph to show amount on hover
 
 
 📈 Better error handling - Global error boundaries, graceful failures
-📈 Loading states - Spinners, skeleton screens
 📈 More complex filtering - Date ranges, multi-select, search
 📈 Responsive polish - Make mobile experience great, not just "works"
-📈 Seeded demo data - So reviewers can see it populated immediately
 📈 README with screenshots - Show it off properly
 Current weaknesses:
-⚠️ Login loop bug - This will hurt in demos
 ⚠️ Limited mobile responsiveness - "A bit" isn't enough for 2025
 ⚠️ No demo/live version? - Hard to show off without deployment
 

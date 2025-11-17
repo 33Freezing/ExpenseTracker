@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Database
+namespace ExpenseTracker.Database
 {
     public class AppDbContext : IdentityDbContext<IdentityUser>
     {

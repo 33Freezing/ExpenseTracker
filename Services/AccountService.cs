@@ -1,4 +1,4 @@
-using Database;
+using ExpenseTracker.Database;
 using ExpenseTracker.Database.Models;
 using ExpenseTracker.Dtos;
 using Microsoft.EntityFrameworkCore;
@@ -7,12 +7,12 @@ namespace ExpenseTracker.Services
 {
     public class AccountService
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly AppDbContext _context;
         private readonly CurrentUserService _currentUserService;
         
-        public AccountService(IDbContextFactory<AppDbContext> contextFactory, CurrentUserService currentUserService)
+        public AccountService(AppDbContext context, CurrentUserService currentUserService)
         {
-            _contextFactory = contextFactory;
+            _context = context;
             _currentUserService = currentUserService;
         }
 
@@ -22,8 +22,7 @@ namespace ExpenseTracker.Services
         }
         public async Task<List<AccountWithBalance>> GetAllWithBalanceAsync()
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
-            return await GetAccountsQuery(context).Include(a => a.Transactions)
+            return await GetAccountsQuery(_context).Include(a => a.Transactions)
             .Select(a => new AccountWithBalance()
             {
                 Id = a.Id,
@@ -35,19 +34,16 @@ namespace ExpenseTracker.Services
 
         public async Task<List<Account>> GetAllAsync()
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
-            return await GetAccountsQuery(context).ToListAsync();
+            return await GetAccountsQuery(_context).ToListAsync();
         }
 
         public async Task<Account> GetAsync(int accountId)
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
-            return await GetAccountsQuery(context).SingleAsync(a => a.Id == accountId);
+            return await GetAccountsQuery(_context).SingleAsync(a => a.Id == accountId);
         }
         public async Task<AccountWithBalance> GetWithBalanceAsync(int accountId)
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
-            return await GetAccountsQuery(context)
+            return await GetAccountsQuery(_context)
             .Include(a => a.Transactions)
             .Select(a => new AccountWithBalance()
             {
@@ -84,36 +80,33 @@ namespace ExpenseTracker.Services
 
         private async Task SaveInternal(Account account)
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
 
             if (account.Id == 0)
             {
-                await context.Accounts.AddAsync(account);
+                await _context.Accounts.AddAsync(account);
             }
             else
             {
-                var oldAccount = await context.Accounts.SingleAsync(a => a.Id == account.Id);
+                var oldAccount = await _context.Accounts.SingleAsync(a => a.Id == account.Id);
                 if (oldAccount != null)
                 {
-                    context.Entry(oldAccount).CurrentValues.SetValues(account);
+                    _context.Entry(oldAccount).CurrentValues.SetValues(account);
                 }
             }
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             
         }
 
         public async Task DeleteAsync(int accountId)
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
-            await GetAccountsQuery(context)
+            await GetAccountsQuery(_context)
                 .Where(a => a.Id == accountId)
                 .ExecuteDeleteAsync();
         }
         
         public async Task DeleteAllAsync()
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
-            await GetAccountsQuery(context)
+            await GetAccountsQuery(_context)
                 .ExecuteDeleteAsync();
         }
         public async Task AssignUserDefaultCategories(string userId)

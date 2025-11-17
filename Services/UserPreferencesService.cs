@@ -1,4 +1,4 @@
-using Database;
+using ExpenseTracker.Database;
 using ExpenseTracker.Database.Models;
 using ExpenseTracker.Dtos;
 using Microsoft.EntityFrameworkCore;
@@ -7,12 +7,12 @@ namespace ExpenseTracker.Services
 {
     public class UserPreferencesService
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly AppDbContext _context;
         private readonly CurrentUserService _currentUserService;
         
-        public UserPreferencesService(IDbContextFactory<AppDbContext> contextFactory, CurrentUserService currentUserService)
+        public UserPreferencesService(AppDbContext context, CurrentUserService currentUserService)
         {
-            _contextFactory = contextFactory;
+            _context = context;
             _currentUserService = currentUserService;
         }
 
@@ -23,16 +23,14 @@ namespace ExpenseTracker.Services
         }
         public async Task<UserPreferences?> GetAsync()
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
-            return await GetPreferencesQuery(context).SingleOrDefaultAsync();
+            return await GetPreferencesQuery(_context).SingleOrDefaultAsync();
         }
 
         public async Task SaveAsync(bool darkMode)
         {
-            using var context = await _contextFactory.CreateDbContextAsync();
-            var preferences = await GetPreferencesQuery(context).SingleAsync();
+            var preferences = await GetPreferencesQuery(_context).SingleAsync();
             preferences.DarkMode = darkMode;
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
         public async Task AssignUserDefaultPreferences(string? userId = "")
         {
@@ -51,9 +49,8 @@ namespace ExpenseTracker.Services
                 DarkMode = false
             };
 
-            using var context = await _contextFactory.CreateDbContextAsync();
-            context.UserPreferences.Add(preference);
-            await context.SaveChangesAsync();
+            _context.UserPreferences.Add(preference);
+            await _context.SaveChangesAsync();
         }
 
     }

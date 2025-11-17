@@ -1,8 +1,9 @@
 using System.Globalization;
-using Database;
 using ExpenseTracker.Components;
+using ExpenseTracker.Database;
 using ExpenseTracker.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using MudBlazor.Services;
@@ -21,8 +22,11 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
     
 builder.Services.AddMudServices();
-builder.Services.AddDbContextFactory<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=app.db"));
+
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 .AddEntityFrameworkStores<AppDbContext>()

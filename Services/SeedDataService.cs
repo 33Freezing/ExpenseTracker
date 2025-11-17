@@ -26,35 +26,27 @@ namespace ExpenseTracker.Services
                 return;
             }
 
+            await _accountService.DeleteAllAsync();
+            var bankAccount = new Account
+            {
+                Name = "Bank Account",
+                InitialBalance = 2500m,
+                IdentityUserId = userId
+            };
+            var cashAccount = new Account
+            {
+                Name = "Cash",
+                InitialBalance = 300m,
+                IdentityUserId = userId
+            };
+
+            await _accountService.SaveAsync(bankAccount);
+            await _accountService.SaveAsync(cashAccount);
             var accounts = await _accountService.GetAllAsync();
-            if(accounts.Count == 0)
-            {
-                var bankAccount = new Account
-                {
-                    Name = "Bank Account",
-                    InitialBalance = 2500m,
-                    IdentityUserId = userId
-                };
-                var cashAccount = new Account
-                {
-                    Name = "Cash",
-                    InitialBalance = 300m,
-                    IdentityUserId = userId
-                };
-
-                await _accountService.SaveAsync(bankAccount);
-                await _accountService.SaveAsync(cashAccount);
-                accounts = await _accountService.GetAllAsync();
-            }
             
+            await _categoryService.DeleteAllAsync();
+            await _categoryService.AssignUserDefaultCategories(userId);
             var categories = await _categoryService.GetAllAsync();
-            if(categories.Count == 0)
-            {
-                await _categoryService.AssignUserDefaultCategories(userId);
-                categories = await _categoryService.GetAllAsync();
-            }
-
-            await _transactionService.DeleteAllAsync();
 
             var random = new Random();
             var transactions = new List<Transaction>();

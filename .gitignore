@@ -65,3 +65,8 @@ appsettings.*.json
 .idea/
 *.user
 *.suo
+
+
+*.db
+*.db-shm
+*.db-wal
