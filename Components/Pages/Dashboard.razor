@@ -20,97 +20,105 @@
 
 <PageTitle>Dashboard</PageTitle>
 
-<MudContainer>
-    <MudPaper Class="pa-6 mt-6" Elevation="0">
-        <MudGrid>
-            <MudItem xs="12" Class="d-flex justify-center">
-                <MudText Typo="Typo.h3">
-                    Welcome back @username
-                </MudText>
-            </MudItem>
-            <MudItem xs="12" md="4">
-                <MudPaper Elevation="5" Class="pa-4">
-                    <MudText Typo="Typo.h6">
-                        Balance
+@if (loading)
+{
+    <div class="d-flex justify-center align-center" style="height: 80vh;">
+        <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+    </div>
+}
+else
+{
+    <MudContainer>
+        <MudPaper Class="pa-6 mt-6" Elevation="0">
+            <MudGrid>
+                <MudItem xs="12" Class="d-flex justify-center">
+                    <MudText Typo="Typo.h3">
+                        Welcome back @username
                     </MudText>
-                    <MudText Typo="Typo.h4" Class="mt-4">
-                        @balance.ToString("C2")
-                    </MudText>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" md="4">
-                <MudPaper Elevation="5" Class="pa-4">
-                    <MudText Typo="Typo.h6">
-                        Income this month
-                    </MudText>
-                    <MudText Typo="Typo.h4" Class="mt-4">
-                        @incomeThisMonth.ToString("C2")
-                    </MudText>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" md="4">
-                <MudPaper Elevation="5" Class="pa-4">
-                    <MudText Typo="Typo.h6">
-                        Expenses this month
-                    </MudText>
-                    <MudText Typo="Typo.h4" Class="mt-4">
-                        @expensesThisMonth.ToString("C2")
-                    </MudText>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" md="6" Class="d-flex">
-                @if (ExpenseIncomeGraphSeries is not null && ExpenseIncomeGraphXAxisLabels is not null)
-                {
-                    <MudPaper Elevation="5" Class="pa-4 flex-grow-1">
-                        <MudText Typo="Typo.h6">
-                            Expenses and Income last 6 months
-                        </MudText>
-                        <MudChart ChartType="ChartType.Bar" ChartSeries="@ExpenseIncomeGraphSeries"
-                            XAxisLabels="@ExpenseIncomeGraphXAxisLabels" Width="100%" Class="mt-4">
-                        </MudChart>
-                    </MudPaper>
-                }
-            </MudItem>
-            <MudItem xs="12" md="6"  Class="d-flex">
-                @if (topCategoriesGraphData is not null && topCategoriesGraphLabels is not null)
-                {
-                    <MudPaper Elevation="5" Class="pa-4 flex-grow-1">
-                        <MudText Typo="Typo.h6">
-                            Top Expenses last 6 months
-                        </MudText>
-                        <MudChart ChartType="ChartType.Donut"
-                            InputData="@topCategoriesGraphData" InputLabels="@topCategoriesGraphLabels" Class="mt-4">
-                        </MudChart>
-                    </MudPaper>
-                }
-            </MudItem>
-            <MudItem xs="12">
-                @if (latestTransactions is not null)
-                {
+                </MudItem>
+                <MudItem xs="12" md="4">
                     <MudPaper Elevation="5" Class="pa-4">
                         <MudText Typo="Typo.h6">
-                            Latest transactions
+                            Balance
                         </MudText>
-                        <MudDataGrid T="Transaction" Items="@latestTransactions" Class="mt-4">
-                            <Columns>
-                                <TemplateColumn Title="Amount">
-                                    <CellTemplate>
-                                        @(context.Item.Category.Type == TransactionType.Expense ? -context.Item.Amount :
-                                                                            context.Item.Amount)
-                                    </CellTemplate>
-                                </TemplateColumn>
-                                <PropertyColumn Property="t => t.Date" Title="Date"></PropertyColumn>
-                                <PropertyColumn Property="t => t.Category.Name" Title="Category"></PropertyColumn>
-                                <PropertyColumn Property="t => t.Description" Title="Description"></PropertyColumn>
-                            </Columns>
-                        </MudDataGrid>
+                        <MudText Typo="Typo.h4" Class="mt-4">
+                            @balance.ToString("C2")
+                        </MudText>
                     </MudPaper>
-                }
-            </MudItem>
-        </MudGrid>
-    </MudPaper>
-</MudContainer>
-
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudPaper Elevation="5" Class="pa-4">
+                        <MudText Typo="Typo.h6">
+                            Income this month
+                        </MudText>
+                        <MudText Typo="Typo.h4" Class="mt-4">
+                            @incomeThisMonth.ToString("C2")
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudPaper Elevation="5" Class="pa-4">
+                        <MudText Typo="Typo.h6">
+                            Expenses this month
+                        </MudText>
+                        <MudText Typo="Typo.h4" Class="mt-4">
+                            @expensesThisMonth.ToString("C2")
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" md="6" Class="d-flex">
+                    @if (ExpenseIncomeGraphSeries is not null && ExpenseIncomeGraphXAxisLabels is not null)
+                    {
+                        <MudPaper Elevation="5" Class="pa-4 flex-grow-1">
+                            <MudText Typo="Typo.h6">
+                                Expenses and Income last 6 months
+                            </MudText>
+                            <MudChart ChartType="ChartType.Bar" ChartSeries="@ExpenseIncomeGraphSeries"
+                                XAxisLabels="@ExpenseIncomeGraphXAxisLabels" Width="100%" Class="mt-4">
+                            </MudChart>
+                        </MudPaper>
+                    }
+                </MudItem>
+                <MudItem xs="12" md="6" Class="d-flex">
+                    @if (topCategoriesGraphData is not null && topCategoriesGraphLabels is not null)
+                    {
+                        <MudPaper Elevation="5" Class="pa-4 flex-grow-1">
+                            <MudText Typo="Typo.h6">
+                                Top Expenses last 6 months
+                            </MudText>
+                            <MudChart ChartType="ChartType.Donut" InputData="@topCategoriesGraphData"
+                                InputLabels="@topCategoriesGraphLabels" Class="mt-4">
+                            </MudChart>
+                        </MudPaper>
+                    }
+                </MudItem>
+                <MudItem xs="12">
+                    @if (latestTransactions is not null)
+                    {
+                        <MudPaper Elevation="5" Class="pa-4">
+                            <MudText Typo="Typo.h6">
+                                Latest transactions
+                            </MudText>
+                            <MudDataGrid T="Transaction" Items="@latestTransactions" Class="mt-4">
+                                <Columns>
+                                    <TemplateColumn Title="Amount">
+                                        <CellTemplate>
+                                            @(context.Item.Category.Type == TransactionType.Expense ? -context.Item.Amount :
+                                                                                context.Item.Amount)
+                                        </CellTemplate>
+                                    </TemplateColumn>
+                                    <PropertyColumn Property="t => t.Date" Title="Date"></PropertyColumn>
+                                    <PropertyColumn Property="t => t.Category.Name" Title="Category"></PropertyColumn>
+                                    <PropertyColumn Property="t => t.Description" Title="Description"></PropertyColumn>
+                                </Columns>
+                            </MudDataGrid>
+                        </MudPaper>
+                    }
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudContainer>
+}
 @code {
 
     [CascadingParameter]
@@ -121,8 +129,11 @@
     private decimal expensesThisMonth = 0;
 
     private List<Transaction> latestTransactions = new List<Transaction>();
+
+    bool loading = true;
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
         if (authenticationState is not null)
         {
             var authState = await authenticationState;
@@ -143,6 +154,7 @@
         SetupHeader(transactions, accounts);
         SetupExpenseIncomeGraph(transactions);
         SetupTopCategoriesGraph(transactions);
+        loading = false;
     }
 
     private void SetupHeader(List<Transaction> transactions, List<AccountWithBalance> accounts)
@@ -238,5 +250,4 @@
             topCategoriesGraphData[5] = 100 - topCategoriesGraphData.Sum(t => t);
         }
     }
-
 }

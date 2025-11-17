@@ -16,64 +16,36 @@
 
 <PageTitle>Categories</PageTitle>
 
-@if(MyCategories != null){
-    <MudContainer MaxWidth="MaxWidth.Medium">
-        <MudPaper Class="pa-6 mt-6" Elevation="15">
-            <MudGrid>
-                <MudItem xs="12" Class="d-flex justify-center">
-                    <MudText Typo="Typo.h4">Categories</MudText>
-                </MudItem>
-                <MudItem xs="12" Class="d-flex justify-center gap-5 mb-4">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OpenCategoryDialogAsync(null))" StartIcon="@Icons.Material.Filled.Add">Add</MudButton>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudTabs @ref="tabs" Elevation="0" ApplyEffectsToContainer="true" PanelClass="pa-6" Centered="true">
-                        <MudTabPanel Text="Expense" > 
-                            @if(MyCategories.Count(c => c.Type == TransactionType.Expense) == 0){
-                                <MudItem xs="12" Class="d-flex justify-center mt-4">
-                                    <MudText Typo="Typo.h5">No expense categories found!</MudText>
-                                </MudItem>
-                            }
-                            else{
-                                <MudPaper Elevation="0">
-                                    <MudGrid>
-                                        @foreach(var category in MyCategories.Where(c => c.Type == TransactionType.Expense)){
-                                            <MudItem xs="12" md="6">
-                                                <MudCard Outlined="true" Class="pa-2 border-2">
-                                                    <MudCardHeader>
-                                                        <MudText Typo="Typo.h6">@category.Name</MudText>
-                                                    </MudCardHeader>
-                                                    <MudCardContent>
-                                                    @if(category.Transactions != null){
-                                                        <MudText Typo="Typo.body1">Total transactions: @category.Transactions.Count</MudText>
-                                                        <MudText Typo="Typo.body1">Total expenses: @category.Transactions.Sum(t=>t.Amount).ToString("C2")</MudText>
-                                                    }
-                                                    </MudCardContent>
-                                                    <MudCardActions>
-                                                    <MudPaper Class="pa-1 d-flex flex-grow-1 justify-space-between mt-3" Elevation="0">
-                                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => OpenCategoryDialogAsync(category.Id))"></MudIconButton>
-                                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => ConfirmDelete(category.Id))"></MudIconButton>
-                                                    </MudPaper>
-                                                    </MudCardActions>
-                                                </MudCard>
-                                            </MudItem>
-                                            }
-                                    </MudGrid>
-                                </MudPaper>
-                                
-                            }
-                            </MudTabPanel>
-                        
-                        <MudTabPanel Text="Income">
-                            @if(MyCategories.Count(c => c.Type == TransactionType.Income) == 0){
-                                <MudItem xs="12" Class="d-flex justify-center mt-4">
-                                    <MudText Typo="Typo.h5">No income categories found!</MudText>
-                                </MudItem>
-                            }
-                            else{
-                                <MudPaper Elevation="0">
-                                    <MudGrid>
-                                            @foreach(var category in MyCategories.Where(c => c.Type == TransactionType.Income)){
+@if (loading)
+{
+    <div class="d-flex justify-center align-center" style="height: 80vh;">
+        <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+    </div>
+}
+else
+{
+    @if(MyCategories != null){
+        <MudContainer MaxWidth="MaxWidth.Medium">
+            <MudPaper Class="pa-6 mt-6" Elevation="15">
+                <MudGrid>
+                    <MudItem xs="12" Class="d-flex justify-center">
+                        <MudText Typo="Typo.h4">Categories</MudText>
+                    </MudItem>
+                    <MudItem xs="12" Class="d-flex justify-center gap-5 mb-4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OpenCategoryDialogAsync(null))" StartIcon="@Icons.Material.Filled.Add">Add</MudButton>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTabs @ref="tabs" Elevation="0" ApplyEffectsToContainer="true" PanelClass="pa-6" Centered="true">
+                            <MudTabPanel Text="Expense" > 
+                                @if(MyCategories.Count(c => c.Type == TransactionType.Expense) == 0){
+                                    <MudItem xs="12" Class="d-flex justify-center mt-4">
+                                        <MudText Typo="Typo.h5">No expense categories found!</MudText>
+                                    </MudItem>
+                                }
+                                else{
+                                    <MudPaper Elevation="0">
+                                        <MudGrid>
+                                            @foreach(var category in MyCategories.Where(c => c.Type == TransactionType.Expense)){
                                                 <MudItem xs="12" md="6">
                                                     <MudCard Outlined="true" Class="pa-2 border-2">
                                                         <MudCardHeader>
@@ -82,7 +54,7 @@
                                                         <MudCardContent>
                                                         @if(category.Transactions != null){
                                                             <MudText Typo="Typo.body1">Total transactions: @category.Transactions.Count</MudText>
-                                                            <MudText Typo="Typo.body1">Total income: @category.Transactions.Sum(t=>t.Amount).ToString("C2")</MudText>
+                                                            <MudText Typo="Typo.body1">Total expenses: @category.Transactions.Sum(t=>t.Amount).ToString("C2")</MudText>
                                                         }
                                                         </MudCardContent>
                                                         <MudCardActions>
@@ -93,19 +65,55 @@
                                                         </MudCardActions>
                                                     </MudCard>
                                                 </MudItem>
-                                            }
-                                    </MudGrid>
-                                </MudPaper>
-                            }
-                            </MudTabPanel>
-                    </MudTabs>
-                </MudItem>
-                
-            </MudGrid>
-        </MudPaper>
-    </MudContainer>
+                                                }
+                                        </MudGrid>
+                                    </MudPaper>
+                                    
+                                }
+                                </MudTabPanel>
+                            
+                            <MudTabPanel Text="Income">
+                                @if(MyCategories.Count(c => c.Type == TransactionType.Income) == 0){
+                                    <MudItem xs="12" Class="d-flex justify-center mt-4">
+                                        <MudText Typo="Typo.h5">No income categories found!</MudText>
+                                    </MudItem>
+                                }
+                                else{
+                                    <MudPaper Elevation="0">
+                                        <MudGrid>
+                                                @foreach(var category in MyCategories.Where(c => c.Type == TransactionType.Income)){
+                                                    <MudItem xs="12" md="6">
+                                                        <MudCard Outlined="true" Class="pa-2 border-2">
+                                                            <MudCardHeader>
+                                                                <MudText Typo="Typo.h6">@category.Name</MudText>
+                                                            </MudCardHeader>
+                                                            <MudCardContent>
+                                                            @if(category.Transactions != null){
+                                                                <MudText Typo="Typo.body1">Total transactions: @category.Transactions.Count</MudText>
+                                                                <MudText Typo="Typo.body1">Total income: @category.Transactions.Sum(t=>t.Amount).ToString("C2")</MudText>
+                                                            }
+                                                            </MudCardContent>
+                                                            <MudCardActions>
+                                                            <MudPaper Class="pa-1 d-flex flex-grow-1 justify-space-between mt-3" Elevation="0">
+                                                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => OpenCategoryDialogAsync(category.Id))"></MudIconButton>
+                                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => ConfirmDelete(category.Id))"></MudIconButton>
+                                                            </MudPaper>
+                                                            </MudCardActions>
+                                                        </MudCard>
+                                                    </MudItem>
+                                                }
+                                        </MudGrid>
+                                    </MudPaper>
+                                }
+                                </MudTabPanel>
+                        </MudTabs>
+                    </MudItem>
+                    
+                </MudGrid>
+            </MudPaper>
+        </MudContainer>
+    }
 }
-
 
 
 @code {
@@ -113,10 +121,13 @@
     private List<Category> MyCategories {get; set;}
     private TransactionType? transactionType;
 
+
+    bool loading = true;
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         await RefreshPage();
+        loading = false;
     }
 
     private async Task OpenCategoryDialogAsync(int? category_id)
