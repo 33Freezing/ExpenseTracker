@@ -27,13 +27,13 @@ jobs:
         run: dotnet build ExpenseTracker/ExpenseTracker.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish ExpenseTracker/ExpenseTracker.csproj -c Release -o myapp
+        run: dotnet publish ExpenseTracker/ExpenseTracker.csproj -c Release -o ./publish
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: myapp
+          path: publish
 
   deploy:
     runs-on: ubuntu-latest
@@ -65,5 +65,6 @@ jobs:
           package: ./published
 
           
+
 
 
