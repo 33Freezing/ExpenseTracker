@@ -24,28 +24,16 @@ jobs:
           dotnet-version: '9.x'
 
       - name: Build with dotnet
-        run: dotnet build ExpenseTrackerWebApp/ExpenseTrackerWebApp.csproj --configuration Release
+        run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish ExpenseTrackerWebApp/ExpenseTrackerWebApp.csproj -c Release -o ./publish
-
-      - name: List published files
-        run: ls -R ./publish
-
-      - name: Flatten publish folder
-        run: |
-          shopt -s dotglob
-          mv ./publish/ExpenseTrackerWebApp/* ./publish/ || echo "No nested folder"
-          rmdir ./publish/ExpenseTrackerWebApp || echo "Folder already removed"
-
-      - name: List published files
-        run: ls -R ./publish
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ./publish
+          path: ${{env.DOTNET_ROOT}}/myapp
 
   deploy:
     runs-on: ubuntu-latest
@@ -59,17 +47,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-          path: ./publish
-
-      - name: List published files
-        run: ls -R ./publish
       
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_7945A7A46D6D42369A965A18288BBF7B }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C830FB1101D540DBA25A4C4600A32D35 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_46E3CC84A98E4BFA80E972310B1DE3C1 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_FA0DD293D24A475F8D47504C3F21DAE4 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_1000D5FB7AB349F0976F252F999883BC }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_EAD6065D42464B21A2F96354BFB9462D }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -77,6 +61,5 @@ jobs:
         with:
           app-name: 'MyExpenseTracker'
           slot-name: 'Production'
-          package: ./publish
-
-
+          package: .
+          
