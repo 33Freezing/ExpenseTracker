@@ -27,13 +27,13 @@ jobs:
         run: dotnet build ExpenseTrackerWebApp/ExpenseTrackerWebApp.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish ExpenseTrackerWebApp/ExpenseTrackerWebApp.csproj  -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish ExpenseTrackerWebApp/ExpenseTrackerWebApp.csproj  -c Release -o ./publish
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ./publish
 
   deploy:
     runs-on: ubuntu-latest
@@ -47,6 +47,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: ./app-package
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -61,8 +62,9 @@ jobs:
         with:
           app-name: 'ExpenseTracker-PersonalFinance'
           slot-name: 'Production'
-          package: .
+          package: ./app-package
           clean: true
 
           
+
 
