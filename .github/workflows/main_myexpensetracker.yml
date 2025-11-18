@@ -29,6 +29,9 @@ jobs:
       - name: dotnet publish
         run: dotnet publish ExpenseTracker/ExpenseTracker.csproj -c Release -o ./publish
 
+      - name: List published files
+        run: ls -R ./publish
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
@@ -48,6 +51,9 @@ jobs:
         with:
           name: .net-app
           path: ./publish
+
+      - name: List published files
+        run: ls -R ./publish
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -63,4 +69,5 @@ jobs:
           app-name: 'MyExpenseTracker'
           slot-name: 'Production'
           package: ./publish
+
 
