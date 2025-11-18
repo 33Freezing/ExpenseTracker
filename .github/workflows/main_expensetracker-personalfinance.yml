@@ -62,5 +62,7 @@ jobs:
           app-name: 'ExpenseTracker-PersonalFinance'
           slot-name: 'Production'
           package: .
+          clean: true
 
           
+
