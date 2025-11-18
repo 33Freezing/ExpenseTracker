@@ -22,30 +22,28 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.x'
+          
+      - name: Restore dependencies
+        run: dotnet restore
 
       - name: Build with dotnet
-        run: dotnet build ExpenseTrackerWebApp/ExpenseTrackerWebApp.csproj --configuration Release
+        run: dotnet build --no-restore --configuration Release
 
-      - name: dotnet publish
-        run: dotnet publish ExpenseTrackerWebApp/ExpenseTrackerWebApp.csproj -c Release -o ./publish
+      - name: Run tests
+        run: dotnet test --no-build --configuration Release --verbosity normal
 
-      - name: List published files
-        run: ls -R ./publish
-
-      - name: Flatten publish folder
+      - name: Publish web app project only
         run: |
-          shopt -s dotglob
-          mv ./publish/ExpenseTrackerWebApp/* ./publish/ || echo "No nested folder"
-          rmdir ./publish/ExpenseTrackerWebApp || echo "Folder already removed"
-
-      - name: List published files
-        run: ls -R ./publish
+          dotnet publish ./ExpenseTrackerWebApp/ExpenseTrackerWebApp.csproj \
+            --no-build \
+            --configuration Release \
+            --output ./publish
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: .net-app
-          path: ./publish
+          name: aspnet-app
+          path: ./publish/**
 
   deploy:
     runs-on: ubuntu-latest
@@ -58,11 +56,11 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: .net-app
+          name: aspnet-app
           path: ./publish
 
-      - name: List published files
-        run: ls -R ./publish
+      - name: Verify published files
+        run: ls -laR ./publish
       
       - name: Login to Azure
         uses: azure/login@v2
