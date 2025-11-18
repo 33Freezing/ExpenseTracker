@@ -27,7 +27,7 @@ jobs:
         run: dotnet build ExpenseTracker/ExpenseTracker.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish ExpenseTracker/ExpenseTracker.csproj -c Release --no-build -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish ExpenseTracker/ExpenseTracker.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
       
       - name: List published files (debug)
         run: ls -la ./publish
@@ -67,3 +67,4 @@ jobs:
           package: .
 
           
+
