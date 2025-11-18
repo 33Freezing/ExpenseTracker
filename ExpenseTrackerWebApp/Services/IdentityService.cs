@@ -51,7 +51,7 @@ namespace ExpenseTrackerWebApp.Services
 
             await _categoryService.AssignUserDefaultCategories(user.Id);
             await _userPreferencesService.AssignUserDefaultPreferences(user.Id);
-            await _accountService.AssignUserDefaultCategories(user.Id);
+            await _accountService.AssignUserDefaultAccounts(user.Id);
             return result;
         }
 

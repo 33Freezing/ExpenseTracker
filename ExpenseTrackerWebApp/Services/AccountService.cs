@@ -19,6 +19,16 @@ namespace ExpenseTrackerWebApp.Services
         {
             return context.Accounts.Where(a => a.IdentityUserId == _currentUserService.GetUserId());
         }
+        public async Task<Account?> GetAsync(int accountId)
+        {
+            return await GetAccountsQuery(_context).SingleOrDefaultAsync(a => a.Id == accountId);
+        }
+
+        public async Task<List<Account>> GetAllAsync()
+        {
+            return await GetAccountsQuery(_context).ToListAsync();
+        }
+
         public async Task<List<AccountWithBalance>> GetAllWithBalanceAsync()
         {
             return await GetAccountsQuery(_context).Include(a => a.Transactions)
@@ -29,28 +39,6 @@ namespace ExpenseTrackerWebApp.Services
                 InitialBalance = a.InitialBalance,
                 CurrentBalance = a.InitialBalance + a.Transactions.Sum(t => t.Amount),
             }).ToListAsync();
-        }
-
-        public async Task<List<Account>> GetAllAsync()
-        {
-            return await GetAccountsQuery(_context).ToListAsync();
-        }
-
-        public async Task<Account?> GetAsync(int accountId)
-        {
-            return await GetAccountsQuery(_context).SingleOrDefaultAsync(a => a.Id == accountId);
-        }
-        public async Task<AccountWithBalance> GetWithBalanceAsync(int accountId)
-        {
-            return await GetAccountsQuery(_context)
-            .Include(a => a.Transactions)
-            .Select(a => new AccountWithBalance()
-            {
-                Id = a.Id,
-                Name = a.Name,
-                InitialBalance = a.InitialBalance,
-                CurrentBalance = a.InitialBalance + a.Transactions.Sum(t => t.Amount),
-            }).SingleAsync(a => a.Id == accountId);
         }
 
         public async Task SaveAsync(AccountDto accountDto)
@@ -107,8 +95,10 @@ namespace ExpenseTrackerWebApp.Services
             await GetAccountsQuery(_context)
                 .ExecuteDeleteAsync();
         }
-        public async Task AssignUserDefaultCategories(string userId)
+        public async Task AssignUserDefaultAccounts(string userId)
         {
+            await DeleteAllAsync();
+            
             var defaultAcounts = new List<Account>()
             {
                 new()

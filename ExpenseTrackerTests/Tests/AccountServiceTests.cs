@@ -123,6 +123,33 @@ public class AccountServiceTests : IDisposable
         return new AccountService(context, currentUserService);
     }
 
+    [Fact]
+    public async Task GetAsync_AliceLoggedIn_ReturnsNull()
+    {
+        var accountService = CreateAccountService(_aliceId);
+        var account = await accountService.GetAsync(_bobCashAccountId);
+        Assert.Null(account);
+    }
+
+    [Fact]
+    public async Task GetAsync_BobLoggedIn_ReturnsValidAccount()
+    {
+        var accountService = CreateAccountService(_bobId);
+        var account = await accountService.GetAsync(_bobCashAccountId);
+
+        Assert.Equal(_bobCashAccountId, account.Id);
+        Assert.Equal("Bob's Cash", account.Name);
+        Assert.Equal(1000.0m, account.InitialBalance);
+    }
+
+
+    [Fact]
+    public async Task GetAsync_BobLoggedIn_InvalidId_ReturnsNull()
+    {
+        var accountService = CreateAccountService(_bobId);
+        var account = await accountService.GetAsync(_charlieBankAccountId);
+        Assert.Null(account);
+    }
 
     [Fact]
     public async Task GetAllAsync_AliceLoggedIn_RetunsEmptyList()
@@ -172,6 +199,47 @@ public class AccountServiceTests : IDisposable
 
         var accounts = await accountService.GetAllAsync();
         Assert.Empty(accounts);
+    }[Fact]
+    public async Task GetAllWithBalanceAsync_AliceLoggedIn_ReturnsCorrectValues()
+    {
+        var accountService = CreateAccountService(_aliceId);
+        var accounts = await accountService.GetAllWithBalanceAsync();
+
+        Assert.Empty(accounts);
+    }
+
+
+    [Fact]
+    public async Task GetAllWithBalanceAsync_BobLoggedIn_ReturnsCorrectValues()
+    {
+        var accountService = CreateAccountService(_bobId);
+        var accounts = await accountService.GetAllWithBalanceAsync();
+
+        Assert.Single(accounts);
+        var account = accounts[0];
+        Assert.Equal(_bobCashAccountId, account.Id);
+        Assert.Equal("Bob's Cash", account.Name);
+        Assert.Equal(1000.0m, account.InitialBalance);
+        Assert.Equal(1000.0m, account.CurrentBalance);
+    }
+
+
+    [Fact]
+    public async Task GetAllWithBalanceAsync_CharlieLoggedIn_ReturnsCorrectValues()
+    {
+        var accountService = CreateAccountService(_charlieId);
+        var accounts = await accountService.GetAllWithBalanceAsync();
+
+        Assert.Equal(2, accounts.Count);
+
+        var bankAccount = accounts.First(a => a.Name == "Charlie's Bank");
+        Assert.Equal(_charlieBankAccountId, bankAccount.Id);
+        Assert.Equal(1500.0m, bankAccount.InitialBalance);
+        Assert.Equal(1482.8m, bankAccount.CurrentBalance);
+
+        var cashAccount = accounts.First(a => a.Name == "Charlie's Cash");
+        Assert.Equal(_charlieCashAccountId, cashAccount.Id);
+        Assert.Equal(300.0m, cashAccount.InitialBalance);
     }
 
 
@@ -263,45 +331,86 @@ public class AccountServiceTests : IDisposable
 
 
     [Fact]
-    public async Task GetAllWithBalanceAsync_AliceLoggedIn_ReturnsCorrectValues()
+    public async Task DeleteAsync_AliceLoggedIn_DoesNotDeleteBobsAccount()
     {
-        var accountService = CreateAccountService(_aliceId);
-        var accounts = await accountService.GetAllWithBalanceAsync();
+        var aliceAccountService = CreateAccountService(_aliceId);
+        var bobAccountService = CreateAccountService(_bobId);
 
-        Assert.Empty(accounts);
+        await aliceAccountService.DeleteAsync(_bobCashAccountId);
+        var aliceAccounts = await aliceAccountService.GetAllAsync();
+        var bobAccounts = await bobAccountService.GetAllAsync();
+
+        Assert.Empty(aliceAccounts);
+        Assert.Single(bobAccounts);
     }
 
 
     [Fact]
-    public async Task GetAllWithBalanceAsync_BobLoggedIn_ReturnsCorrectValues()
+    public async Task DeleteAsync_BobLoggedIn_DeletesBobAccount()
     {
-        var accountService = CreateAccountService(_bobId);
-        var accounts = await accountService.GetAllWithBalanceAsync();
+        var bobAccountService = CreateAccountService(_bobId);
 
-        Assert.Single(accounts);
-        var account = accounts[0];
-        Assert.Equal(_bobCashAccountId, account.Id);
-        Assert.Equal("Bob's Cash", account.Name);
-        Assert.Equal(1000.0m, account.InitialBalance);
-        Assert.Equal(1000.0m, account.CurrentBalance);
+        await bobAccountService.DeleteAsync(_bobCashAccountId);
+        var bobAccounts = await bobAccountService.GetAllAsync();
+
+        Assert.Empty(bobAccounts);
     }
 
 
     [Fact]
-    public async Task GetAllWithBalanceAsync_CharlieLoggedIn_ReturnsCorrectValues()
+    public async Task DeleteAllAsync_BobLoggedIn_DeletesBobsAccounts_OtherAccountsIntact()
     {
-        var accountService = CreateAccountService(_charlieId);
-        var accounts = await accountService.GetAllWithBalanceAsync();
+        var aliceAccountService = CreateAccountService(_aliceId);
+        var bobAccountService = CreateAccountService(_bobId);
+        var charlieAccountService = CreateAccountService(_charlieId);
 
-        Assert.Equal(2, accounts.Count);
+        await bobAccountService.DeleteAllAsync();
 
-        var bankAccount = accounts.First(a => a.Name == "Charlie's Bank");
-        Assert.Equal(_charlieBankAccountId, bankAccount.Id);
-        Assert.Equal(1500.0m, bankAccount.InitialBalance);
-        Assert.Equal(1482.8m, bankAccount.CurrentBalance);
+        var aliceAccounts = await aliceAccountService.GetAllAsync();
+        var bobAccounts = await bobAccountService.GetAllAsync();
+        var charlieAccounts = await charlieAccountService.GetAllAsync();
 
-        var cashAccount = accounts.First(a => a.Name == "Charlie's Cash");
-        Assert.Equal(_charlieCashAccountId, cashAccount.Id);
-        Assert.Equal(300.0m, cashAccount.InitialBalance);
+        Assert.Empty(aliceAccounts);
+        Assert.Empty(bobAccounts);
+        Assert.Equal(2, charlieAccounts.Count);
     }
+
+    [Fact]
+    public async Task AssignUserDefaultAccounts_AliceLoggedIn_AddsAccounts()
+    {
+        var aliceAccountService = CreateAccountService(_aliceId);
+
+        await aliceAccountService.AssignUserDefaultAccounts(_aliceId);
+
+        var aliceAccounts = await aliceAccountService.GetAllAsync();
+        
+        Assert.Equal(2, aliceAccounts.Count);
+        var account = aliceAccounts.First(a => a.Name == "Cash");
+        Assert.Equal("Cash", account.Name);
+        Assert.Equal(0, account.InitialBalance);
+        
+        account = aliceAccounts.First(a => a.Name == "Bank");
+        Assert.Equal("Bank", account.Name);
+        Assert.Equal(0, account.InitialBalance);
+    }
+
+    [Fact]
+    public async Task AssignUserDefaultAccounts_CharlieLoggedIn_AddsAccounts()
+    {
+        var charlieAccountService = CreateAccountService(_charlieId);
+
+        await charlieAccountService.AssignUserDefaultAccounts(_charlieId);
+
+        var charlieAccounts = await charlieAccountService.GetAllAsync();
+        
+        Assert.Equal(2, charlieAccounts.Count);
+        var account = charlieAccounts.First(a => a.Name == "Cash");
+        Assert.Equal("Cash", account.Name);
+        Assert.Equal(0, account.InitialBalance);
+        
+        account = charlieAccounts.First(a => a.Name == "Bank");
+        Assert.Equal("Bank", account.Name);
+        Assert.Equal(0, account.InitialBalance);
+    }
+
 }
