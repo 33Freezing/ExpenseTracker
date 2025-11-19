@@ -1,4 +1,5 @@
 using System.Globalization;
+using ApexCharts;
 using ExpenseTrackerWebApp.Components;
 using ExpenseTrackerWebApp.Database;
 using ExpenseTrackerWebApp.Services;
@@ -70,6 +71,22 @@ builder.Services.AddScoped<SeedDataService>();
 builder.Services.AddScoped<IdentityService>();
 builder.Services.AddScoped<UserPreferencesService>();
 
+builder.Services.AddApexCharts(e =>
+{
+    e.GlobalOptions = new ApexChartBaseOptions
+    {
+        Debug = false,
+        Theme = new Theme 
+        { 
+            Mode = Mode.Light,
+            Palette = PaletteType.Palette6 
+        },
+        Chart = new Chart
+        {
+            Background = "transparent"
+        }
+    };
+});
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();

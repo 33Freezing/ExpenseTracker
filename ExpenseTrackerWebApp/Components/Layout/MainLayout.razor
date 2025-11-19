@@ -1,20 +1,23 @@
-﻿@using ExpenseTrackerWebApp.Services
+﻿@using ApexCharts
+@using ExpenseTrackerWebApp.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @inherits LayoutComponentBase
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IdentityService IdentityService
 @inject NavigationManager NavigationManager
 @inject UserPreferencesService UserPreferencesService
+@inject IApexChartService ApexChartService
+
 <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme"/>
 
 <MudLayout>
     @if(IsLoggedIn){
     <MudAppBar Elevation="1">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="MudBlazor.Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
-        <MudSwitch @bind-Value="_isDarkMode" Color="Color.Primary"
+        <MudSwitch @bind-Value="_isDarkMode" Color="MudBlazor.Color.Primary"
             Class="ma-4" T="bool" Label="Dark Mode" @bind-Value:after="this.ThemeChanged"/>
-        <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="Logout">Logout</MudButton>
+        <MudButton Variant="Variant.Text" Color="MudBlazor.Color.Error" OnClick="Logout">Logout</MudButton>
     </MudAppBar>
         <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
             <MudDrawerHeader>
@@ -34,7 +37,7 @@
         </MudAppBar>
     }
     
-    <MudMainContent>
+    <MudMainContent>>
         @Body
     </MudMainContent>
 </MudLayout>
@@ -48,8 +51,6 @@
     }
 
 
-    private MudTheme _theme = new();
-    private bool _isDarkMode;
     private bool IsLoggedIn = false;
 
     protected override async Task OnInitializedAsync()
@@ -76,10 +77,28 @@
         NavigationManager.NavigateTo($"/api/auth/logout", forceLoad: true);
     }
 
+
+    private bool _isDarkMode;
+    private MudTheme _theme = new();
+    
     private async Task ThemeChanged(){    
         if(IsLoggedIn){
             await UserPreferencesService.SaveAsync(_isDarkMode);
         }
+
+        await ApexChartService.SetGlobalOptionsAsync(new ApexChartBaseOptions
+        {
+            Debug = false,
+            Theme = new Theme 
+            { 
+                Mode = _isDarkMode ? Mode.Dark : Mode.Light,
+                Palette = PaletteType.Palette6 
+            },
+            Chart = new Chart
+            {
+                Background = "transparent"
+            }
+        }, true);
         StateHasChanged();
     }
 }
