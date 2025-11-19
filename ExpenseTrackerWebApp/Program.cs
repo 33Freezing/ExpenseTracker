@@ -70,6 +70,7 @@ builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<SeedDataService>();
 builder.Services.AddScoped<IdentityService>();
 builder.Services.AddScoped<UserPreferencesService>();
+builder.Services.AddScoped<DashboardService>();
 
 builder.Services.AddApexCharts(e =>
 {
