@@ -4,7 +4,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AccountService AccountService
-@inject CurrentUserService CurrentUserService
+@inject ICurrentUserService CurrentUserService
 @inject ISnackbar Snackbar
 
 @if (AccountDto is not null)

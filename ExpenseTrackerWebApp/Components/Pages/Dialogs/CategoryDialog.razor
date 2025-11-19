@@ -3,7 +3,7 @@
 @using ExpenseTrackerWebApp.Services
 @using Microsoft.AspNetCore.Authorization
 @inject CategoryService CategoryService
-@inject CurrentUserService CurrentUserService
+@inject ICurrentUserService CurrentUserService
 @inject ISnackbar Snackbar
 
 @if (CategoryDto is not null)

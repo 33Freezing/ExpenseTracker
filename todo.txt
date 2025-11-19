@@ -2,6 +2,7 @@
 - change order of income/expense for transaction dialog
 - need to fix the loading problem
 - gotta optimize the queries a bit especially on dashboard and transactions
+-- gotta test for many transations to see how it handles it
 
 
 📈 Better error handling - Global error boundaries, graceful failures
