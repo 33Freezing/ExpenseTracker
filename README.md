@@ -2,7 +2,7 @@
 
 A simple expense tracking app with dashboard, transactions, accounts, categories, dark mode, and CSV export.
 
-**Live Demo:** [myexpensetracker-d8c9fvcfbpb7h7bj.canadacentral-01.azurewebsites.net](expensetracker-personalfinance-hbgeczh8ayhaapeg.germanywestcentral-01.azurewebsites.net)
+**Live Demo:** [myexpensetracker-d8c9fvcfbpb7h7bj.canadacentral-01.azurewebsites.net](https://expensetracker-personalfinance-hbgeczh8ayhaapeg.germanywestcentral-01.azurewebsites.net/login?ReturnUrl=%2F)
 
 ## Features
 

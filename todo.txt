@@ -1,12 +1,7 @@
-- clear filters button on transactions
-
-- filters multi select transactions
 - look good on mobile
 - change order of income/expense for transaction dialog
 - fix top expenses graph to show amount on hover
 
-- add sample accounts
--- write some tests
 
 
 📈 Better error handling - Global error boundaries, graceful failures

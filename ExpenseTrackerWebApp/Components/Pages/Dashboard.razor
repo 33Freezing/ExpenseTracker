@@ -101,15 +101,25 @@ else
                             </MudText>
                             <MudDataGrid T="Transaction" Items="@latestTransactions" Class="mt-4">
                                 <Columns>
-                                    <TemplateColumn Title="Amount">
-                                        <CellTemplate>
-                                            @(context.Item.Category.Type == TransactionType.Expense ? -context.Item.Amount :
-                                                                                context.Item.Amount)
-                                        </CellTemplate>
-                                    </TemplateColumn>
-                                    <PropertyColumn Property="t => t.Date" Title="Date"></PropertyColumn>
-                                    <PropertyColumn Property="t => t.Category.Name" Title="Category"></PropertyColumn>
-                                    <PropertyColumn Property="t => t.Description" Title="Description"></PropertyColumn>
+                                    <PropertyColumn Property="t => t.Account.Name" Title="Account"></PropertyColumn>
+                                        <PropertyColumn Property="t => t.Category.Name" Title="Category"></PropertyColumn>
+                                        <PropertyColumn Property="t => t.Date" Format="dd//MM/yyyy" Title="Date"></PropertyColumn>
+                                        <TemplateColumn Title="Amount">
+                                            <CellTemplate>
+                                                @if (context.Item.Category.Type == TransactionType.Expense)
+                                                {
+                                                    <MudText Color="Color.Error">
+                                                        -@context.Item.Amount.ToString(format: "C2")
+                                                    </MudText>
+                                                }
+                                                else
+                                                {
+                                                    <MudText Color="Color.Success">
+                                                        @context.Item.Amount.ToString(format: "C2")
+                                                    </MudText>
+                                                }
+                                            </CellTemplate>
+                                        </TemplateColumn>
                                 </Columns>
                             </MudDataGrid>
                         </MudPaper>
@@ -146,7 +156,7 @@ else
         }
 
         List<Transaction> transactions = await TransactionService.GetAllAsync();
-        latestTransactions = transactions.OrderByDescending(t => t.Date).Take(5).ToList();
+        latestTransactions = transactions.OrderByDescending(t => t.Date).Take(10).ToList();
 
         List<AccountWithBalance> accounts = await AccountService.GetAllWithBalanceAsync();
 
