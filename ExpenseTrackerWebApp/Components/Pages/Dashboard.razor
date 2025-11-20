@@ -8,6 +8,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using MudBlazor.Extensions
 @using System.Globalization
+@using ExpenseTrackerWebApp.Components.MyComponents
 
 @inject TransactionService TransactionService
 @inject CategoryService CategoryService
@@ -39,33 +40,27 @@ else
                     </MudText>
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudPaper Elevation="5" Class="pa-4">
+                    <MudPaper Elevation="5" Class="pa-4 d-flex flex-column gap-4">
                         <MudText Typo="Typo.h6">
                             Balance
                         </MudText>
-                        <MudText Typo="Typo.h4" Class="mt-4">
-                            @dashboardSummary.Balance.ToString("C2")
-                        </MudText>
+                        <AmountDisplay Balance="@dashboardSummary.Balance" FontSize="Typo.h4" />
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudPaper Elevation="5" Class="pa-4">
+                    <MudPaper Elevation="5" Class="pa-4 d-flex flex-column gap-4">
                         <MudText Typo="Typo.h6">
                             Income this month
                         </MudText>
-                        <MudText Typo="Typo.h4" Class="mt-4">
-                            @dashboardSummary.IncomeThisMonth.ToString("C2")
-                        </MudText>
+                        <AmountDisplay Balance="@dashboardSummary.IncomeThisMonth" FontSize="Typo.h4" />
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudPaper Elevation="5" Class="pa-4">
+                    <MudPaper Elevation="5" Class="pa-4 d-flex flex-column gap-4">
                         <MudText Typo="Typo.h6">
                             Expenses this month
                         </MudText>
-                        <MudText Typo="Typo.h4" Class="mt-4">
-                            @dashboardSummary.ExpensesThisMonth.ToString("C2")
-                        </MudText>
+                        <AmountDisplay Balance="@dashboardSummary.ExpensesThisMonth" FontSize="Typo.h4" />
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" md="6" Class="d-flex">
@@ -109,18 +104,7 @@ else
                                 <PropertyColumn Property="t => t.Date" Format="dd//MM/yyyy" Title="Date"></PropertyColumn>
                                 <TemplateColumn Title="Amount">
                                     <CellTemplate>
-                                        @if (context.Item.Category.Type == TransactionType.Expense)
-                                        {
-                                            <MudText Color="MudBlazor.Color.Error">
-                                                -@context.Item.Amount.ToString(format: "C2")
-                                            </MudText>
-                                        }
-                                        else
-                                        {
-                                            <MudText Color="MudBlazor.Color.Success">
-                                                @context.Item.Amount.ToString(format: "C2")
-                                            </MudText>
-                                        }
+                                        <AmountDisplay Balance="context.Item.Amount" />
                                     </CellTemplate>
                                 </TemplateColumn>
                             </Columns>

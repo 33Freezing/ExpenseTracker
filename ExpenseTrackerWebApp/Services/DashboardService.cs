@@ -73,7 +73,7 @@ namespace ExpenseTrackerWebApp.Services
                 result.Add(topCategories[i]);
                 topCategoriesAmount += topCategories[i].Amount;
             }
-            if (topCategories.Count > maxCategoriesToShow)
+            if (topCategories.Count > maxCategoriesToShow && (total - topCategoriesAmount) > 0)
             {
                 result.Add(new CategoryData() { Category = "Other", Amount = total - topCategoriesAmount });
             }

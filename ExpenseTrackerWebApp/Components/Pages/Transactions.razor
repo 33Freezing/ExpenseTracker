@@ -1,4 +1,5 @@
 ﻿@page "/transactions"
+@using ExpenseTrackerWebApp.Components.MyComponents
 @using ExpenseTrackerWebApp.Components.Pages.Dialogs
 @using ExpenseTrackerWebApp.Database.Models
 @using ExpenseTrackerWebApp.Services
@@ -125,20 +126,9 @@ else
                                     <PropertyColumn Property="t => t.Account.Name" Title="Account"></PropertyColumn>
                                         <PropertyColumn Property="t => t.Category.Name" Title="Category"></PropertyColumn>
                                         <PropertyColumn Property="t => t.Date" Format="dd//MM/yyyy" Title="Date"></PropertyColumn>
-                                        <TemplateColumn Title="Amount">
+                                        <TemplateColumn Title="Amount" SortBy="t => t.Amount" Sortable="true">
                                             <CellTemplate>
-                                                @if (context.Item.Category.Type == TransactionType.Expense)
-                                                {
-                                                    <MudText Color="Color.Error">
-                                                        -@context.Item.Amount.ToString(format: "C2")
-                                                    </MudText>
-                                                }
-                                                else
-                                                {
-                                                    <MudText Color="Color.Success">
-                                                        @context.Item.Amount.ToString(format: "C2")
-                                                    </MudText>
-                                                }
+                                                <AmountDisplay Balance="context.Item.Amount" />
                                             </CellTemplate>
                                         </TemplateColumn>
                                         <TemplateColumn>
@@ -160,26 +150,8 @@ else
                                     }
                                     <MudPaper Elevation="0" Class="d-flex gap-2">
                                         <MudText>
-                                            Balance:
+                                            Balance: <AmountDisplay Balance="balance" />
                                         </MudText>
-                                        @if (balance == 0)
-                                        {
-                                            <MudText>
-                                                @balance.ToString(format: "C2")
-                                            </MudText>
-                                        }
-                                        else if (balance < 0)
-                                        {
-                                            <MudText Color="Color.Error">
-                                                @balance.ToString(format: "C2")
-                                            </MudText>
-                                        }
-                                        else
-                                        {
-                                            <MudText Color="Color.Success">
-                                                @balance.ToString(format: "C2")
-                                            </MudText>
-                                        }
                                     </MudPaper>
 
                                 </MudItem>

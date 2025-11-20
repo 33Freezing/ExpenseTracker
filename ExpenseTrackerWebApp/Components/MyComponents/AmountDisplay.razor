@@ -1,0 +1,31 @@
+@using MudBlazor
+@using Microsoft.AspNetCore.Components
+
+@if (Balance == 0)
+{
+    <MudText Typo="@FontSize">
+        @Balance.ToString(format: "C2")
+    </MudText>
+}
+else if (Balance < 0)
+{
+    <MudText Typo="@FontSize" Color="Color.Error">
+        -@Balance.ToString(format: "C2")
+    </MudText>
+}
+else
+{
+    <MudText Typo="@FontSize" Color="Color.Success">
+        @Balance.ToString(format: "C2")
+    </MudText>
+}
+
+
+@code{
+    [Parameter]
+    public decimal Balance { get; set; }
+
+
+    [Parameter]
+    public Typo FontSize { get; set; } = Typo.body1;
+}

@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using MudBlazor.Extensions
 @using System.Globalization
+@using ExpenseTrackerWebApp.Components.MyComponents
 @inject TransactionService TransactionService
 @inject CategoryService CategoryService
 @inject IDialogService DialogService
@@ -54,7 +55,10 @@ else
                                                         <MudCardContent>
                                                         @if(category.Transactions != null){
                                                             <MudText Typo="Typo.body1">Total transactions: @category.Transactions.Count</MudText>
-                                                            <MudText Typo="Typo.body1">Total expenses: @category.Transactions.Sum(t=>t.Amount).ToString("C2")</MudText>
+                                                                <MudPaper Elevation="0" Class="d-flex gap-2">
+                                                                    <MudText Typo="Typo.body1">Total expenses: </MudText>
+                                                                    <AmountDisplay Balance="@category.Transactions.Sum(t => t.Amount)" FontSize="Typo.body1" />
+                                                                </MudPaper>
                                                         }
                                                         </MudCardContent>
                                                         <MudCardActions>
@@ -90,7 +94,11 @@ else
                                                             <MudCardContent>
                                                             @if(category.Transactions != null){
                                                                 <MudText Typo="Typo.body1">Total transactions: @category.Transactions.Count</MudText>
-                                                                <MudText Typo="Typo.body1">Total income: @category.Transactions.Sum(t=>t.Amount).ToString("C2")</MudText>
+                                                                <MudPaper Elevation="0" Class="d-flex gap-2">
+                                                                    <MudText Typo="Typo.body1">Total income: </MudText>
+                                                                    <AmountDisplay Balance="@category.Transactions.Sum(t => t.Amount)" FontSize="Typo.body1" />
+                                                                </MudPaper>
+                                                                
                                                             }
                                                             </MudCardContent>
                                                             <MudCardActions>

@@ -52,14 +52,14 @@ namespace ExpenseTrackerWebApp.Services
             var transactions = new List<Transaction>();
             var today = DateTime.Today;
             
-            for (int i = 0; i < 200; i++)
+            for (int i = 0; i < 2000; i++)
             {
-                var daysAgo = random.Next(0, 600);
+                var daysAgo = random.Next(0, 1200);
                 var date = today.AddDays(-daysAgo);
 
                 var category = categories[random.Next(categories.Count)];
                 var account = accounts[random.Next(accounts.Count)];
-                var amount = random.Next(0, 300);
+                var amount = random.Next(0, 500);
 
                 transactions.Add(new Transaction
                 {

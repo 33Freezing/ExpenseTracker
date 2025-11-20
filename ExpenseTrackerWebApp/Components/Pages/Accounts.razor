@@ -4,6 +4,7 @@
 @using ExpenseTrackerWebApp.Services
 @using ExpenseTrackerWebApp.Components.Pages.Dialogs
 @using Microsoft.AspNetCore.Authorization
+@using ExpenseTrackerWebApp.Components.MyComponents
 @inject AccountService AccountService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -51,7 +52,7 @@ else
                                 <MudCardContent>
                                     <MudPaper Elevation="0">
                                         <MudText Style="font-size: 18px;">Balance: </MudText>
-                                        <MudText Typo="Typo.h4">@account.CurrentBalance.ToString("C2")</MudText>
+                                            <AmountDisplay Balance="@account.CurrentBalance" FontSize="Typo.h4" />
                                     </MudPaper>
                                 </MudCardContent>
                                 <MudCardActions>
