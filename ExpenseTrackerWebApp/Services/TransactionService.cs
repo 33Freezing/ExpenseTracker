@@ -16,6 +16,10 @@ namespace ExpenseTrackerWebApp.Services
             _context = context;
             _currentUserService = currentUserService;
         }
+        // has 2 accounts
+        // has two transactions this month, one income one expense
+        // has five transctions last month, all expenses
+        // has seven transctions two months ago, six expenses one income
 
         public IQueryable<Transaction> GetTransactionsQuery(AppDbContext context)
         {
@@ -100,5 +104,6 @@ namespace ExpenseTrackerWebApp.Services
         {
             return await GetTransactionsQuery(_context).SingleAsync(t => t.Id == transactionId);
         }
+    
     }
 }

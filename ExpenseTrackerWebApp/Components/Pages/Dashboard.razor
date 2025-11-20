@@ -14,6 +14,7 @@
 @inject AccountService AccountService
 @inject IDialogService DialogService
 @inject SeedDataService SeedDataService
+@inject DashboardService DashboardService
 
 <MudPopoverProvider />
 <MudDialogProvider />
@@ -43,7 +44,7 @@ else
                             Balance
                         </MudText>
                         <MudText Typo="Typo.h4" Class="mt-4">
-                            @balance.ToString("C2")
+                            @dashboardSummary.Balance.ToString("C2")
                         </MudText>
                     </MudPaper>
                 </MudItem>
@@ -53,7 +54,7 @@ else
                             Income this month
                         </MudText>
                         <MudText Typo="Typo.h4" Class="mt-4">
-                            @incomeThisMonth.ToString("C2")
+                            @dashboardSummary.IncomeThisMonth.ToString("C2")
                         </MudText>
                     </MudPaper>
                 </MudItem>
@@ -63,7 +64,7 @@ else
                             Expenses this month
                         </MudText>
                         <MudText Typo="Typo.h4" Class="mt-4">
-                            @expensesThisMonth.ToString("C2")
+                            @dashboardSummary.ExpensesThisMonth.ToString("C2")
                         </MudText>
                     </MudPaper>
                 </MudItem>
@@ -72,17 +73,15 @@ else
                         <MudText Typo="Typo.h6">
                             Expenses and Income last 6 months
                         </MudText>
-                        <ApexChart TItem="Transaction" Options="incomeExpensesLastSixMonthsChartOptions">
+                        <ApexChart TItem="CumulativeData">
 
-                            <ApexPointSeries TItem="Transaction" Items="transactionLastSixMonths" Name="Income"
-                                XValue="@(e => new DateTime(e.Date.Year, e.Date.Month, 1, 0, 0, 0, DateTimeKind.Utc))"
-                                YAggregate="@(e => e.Where(e => e.Amount > 0).Sum(e => e.Amount))"
-                                SeriesType="SeriesType.Bar" OrderByDescending="e=>e.X" />
+                            <ApexPointSeries TItem="CumulativeData" Items="dashboardSummary.CumulativeIncomePerMonth" Name="Income"
+                                XValue="@(e => e.TimePeriod)" YValue="@(e => e.Amount)"
+                                SeriesType="SeriesType.Bar" />
 
-                            <ApexPointSeries TItem="Transaction" Items="transactionLastSixMonths" Name="Expenses"
-                                XValue="@(e => new DateTime(e.Date.Year, e.Date.Month, 1, 0, 0, 0, DateTimeKind.Utc))"
-                                YAggregate="@(e => e.Where(e => e.Amount < 0).Sum(e => -e.Amount))"
-                                SeriesType="SeriesType.Bar" OrderByDescending="e=>e.X" />
+                            <ApexPointSeries TItem="CumulativeData" Items="dashboardSummary.CumulativeExpensesPerMonth" Name="Expenses"
+                                XValue="@(e => e.TimePeriod)" YValue="@(e => e.Amount)"
+                                SeriesType="SeriesType.Bar" />
                         </ApexChart>
                     </MudPaper>
                 </MudItem>
@@ -92,44 +91,41 @@ else
                             Top Expenses last 6 months
                         </MudText>
                         <ApexChart TItem="CategoryData">
-                            <ApexPointSeries TItem="CategoryData" Items="topCategoriesData" SeriesType="SeriesType.Donut"
+                            <ApexPointSeries TItem="CategoryData" Items="dashboardSummary.TopExpenseCategories" SeriesType="SeriesType.Donut"
                                 Name="Top Expenses by Category" XValue="@(e => e.Category)" YValue="@(e => e.Amount)">
                             </ApexPointSeries>
                         </ApexChart>
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12">
-                    @if (latestTransactions is not null)
-                    {
-                        <MudPaper Elevation="5" Class="pa-4">
-                            <MudText Typo="Typo.h6">
-                                Latest transactions
-                            </MudText>
-                            <MudDataGrid T="Transaction" Items="@latestTransactions" Class="mt-4">
-                                <Columns>
-                                    <PropertyColumn Property="t => t.Account.Name" Title="Account"></PropertyColumn>
-                                    <PropertyColumn Property="t => t.Category.Name" Title="Category"></PropertyColumn>
-                                    <PropertyColumn Property="t => t.Date" Format="dd//MM/yyyy" Title="Date"></PropertyColumn>
-                                    <TemplateColumn Title="Amount">
-                                        <CellTemplate>
-                                            @if (context.Item.Category.Type == TransactionType.Expense)
-                                            {
-                                                <MudText Color="MudBlazor.Color.Error">
-                                                    -@context.Item.Amount.ToString(format: "C2")
-                                                </MudText>
-                                            }
-                                            else
-                                            {
-                                                <MudText Color="MudBlazor.Color.Success">
-                                                    @context.Item.Amount.ToString(format: "C2")
-                                                </MudText>
-                                            }
-                                        </CellTemplate>
-                                    </TemplateColumn>
-                                </Columns>
-                            </MudDataGrid>
-                        </MudPaper>
-                    }
+                    <MudPaper Elevation="5" Class="pa-4">
+                        <MudText Typo="Typo.h6">
+                            Latest transactions
+                        </MudText>
+                        <MudDataGrid T="Transaction" Items="@dashboardSummary.RecentTransactions" Class="mt-4">
+                            <Columns>
+                                <PropertyColumn Property="t => t.Account.Name" Title="Account"></PropertyColumn>
+                                <PropertyColumn Property="t => t.Category.Name" Title="Category"></PropertyColumn>
+                                <PropertyColumn Property="t => t.Date" Format="dd//MM/yyyy" Title="Date"></PropertyColumn>
+                                <TemplateColumn Title="Amount">
+                                    <CellTemplate>
+                                        @if (context.Item.Category.Type == TransactionType.Expense)
+                                        {
+                                            <MudText Color="MudBlazor.Color.Error">
+                                                -@context.Item.Amount.ToString(format: "C2")
+                                            </MudText>
+                                        }
+                                        else
+                                        {
+                                            <MudText Color="MudBlazor.Color.Success">
+                                                @context.Item.Amount.ToString(format: "C2")
+                                            </MudText>
+                                        }
+                                    </CellTemplate>
+                                </TemplateColumn>
+                            </Columns>
+                        </MudDataGrid>
+                    </MudPaper>
                 </MudItem>
             </MudGrid>
         </MudPaper>
@@ -140,14 +136,7 @@ else
     [CascadingParameter]
     private Task<AuthenticationState>? authenticationState { get; set; }
     private string username = "";
-    private decimal balance = 0;
-    private decimal incomeThisMonth = 0;
-    private decimal expensesThisMonth = 0;
-
-    private List<Transaction> latestTransactions = new List<Transaction>();
-
-    private List<Transaction> transactionLastSixMonths = new List<Transaction>();
-    private ApexChartOptions<Transaction> incomeExpensesLastSixMonthsChartOptions = new()
+    private ApexChartOptions<CumulativeData> incomeExpensesLastSixMonthsChartOptions = new()
     {
         Xaxis = new XAxis
         {
@@ -174,9 +163,11 @@ else
         }
     };
     bool loading = true;
+    private DashboardSummary dashboardSummary = new DashboardSummary();
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        dashboardSummary = await DashboardService.GetDashboardSummaryAsync();
 
         if (authenticationState is not null)
         {
@@ -188,78 +179,7 @@ else
                 username = user.Identity.Name ?? "";
             }
         }
-
-        var transactions = await TransactionService.GetAllAsync();
-        transactionLastSixMonths = transactions.Where(t => t.Date >
-        DateTime.Now.AddMonths(-6).StartOfMonth(CultureInfo.CurrentCulture)).ToList();
-        latestTransactions = transactions.OrderByDescending(t => t.Date).Take(10).ToList();
-
-        List<AccountWithBalance> accounts = await AccountService.GetAllWithBalanceAsync();
-
-
-        SetupHeader(transactions, accounts);
-        topCategoriesData = GetTopCategoriesData(transactions);
         loading = false;
     }
 
-    private List<CategoryData> topCategoriesData = new List<CategoryData>();
-
-    private void SetupHeader(List<Transaction> transactions, List<AccountWithBalance> accounts)
-    {
-        balance = accounts.Sum(a => a.CurrentBalance);
-        var transactionsThisMonth = transactions
-        .Where(t => t.Date >= DateTime.Now.StartOfMonth(CultureInfo.CurrentCulture))
-        .ToList();
-
-        foreach (var transaction in transactionsThisMonth)
-        {
-            if (transaction.Category.Type == TransactionType.Expense)
-            {
-                expensesThisMonth += transaction.Amount;
-            }
-            else if (transaction.Category.Type == TransactionType.Income)
-            {
-                incomeThisMonth += transaction.Amount;
-            }
-        }
-        expensesThisMonth = -expensesThisMonth;
-    }
-
-    private List<CategoryData> GetTopCategoriesData(List<Transaction> transactions, int numOfMonthsBehind = 6)
-    {
-        var result = new List<CategoryData>();
-        var dateStart = DateTime.Now.AddMonths(-numOfMonthsBehind).StartOfMonth(CultureInfo.CurrentCulture);
-        var topCategories = transactions
-        .Where(t => t.Category.Type == TransactionType.Expense)
-        .Where(t => t.Date >= dateStart)
-        .GroupBy(t => t.Category)
-        .Select(g => new CategoryData()
-        {
-            Category = g.Key.Name,
-            Amount = g.Sum(t => -t.Amount)
-        })
-        .OrderByDescending(g => g.Amount).ToList();
-
-        decimal total = topCategories.Sum(c => c.Amount);
-        decimal topSixCategoriesAmount = 0;
-
-        for (int i = 0; i < 5 && i < topCategories.Count; ++i)
-        {
-            result.Add(topCategories[i]);
-            topSixCategoriesAmount += topCategories[i].Amount;
-        }
-        if (topCategories.Count > 5)
-        {
-            result.Add(new CategoryData() { Category = "Other", Amount = total - topSixCategoriesAmount });
-        }
-
-        return result;
-    }
-
-
-    private class CategoryData
-    {
-        public string Category { get; set; }
-        public decimal Amount { get; set; }
-    }
 }
