@@ -39,7 +39,7 @@ namespace ExpenseTrackerWebApp.Migrations
 
                     b.HasIndex("IdentityUserId");
 
-                    b.ToTable("Accounts");
+                    b.ToTable("Accounts", (string)null);
                 });
 
             modelBuilder.Entity("ExpenseTrackerWebApp.Database.Models.Category", b =>
@@ -69,7 +69,7 @@ namespace ExpenseTrackerWebApp.Migrations
 
                     b.HasIndex("IdentityUserId");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("ExpenseTrackerWebApp.Database.Models.Transaction", b =>
@@ -100,7 +100,7 @@ namespace ExpenseTrackerWebApp.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Transactions");
+                    b.ToTable("Transactions", (string)null);
                 });
 
             modelBuilder.Entity("ExpenseTrackerWebApp.Database.Models.UserPreferences", b =>
@@ -113,7 +113,7 @@ namespace ExpenseTrackerWebApp.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("UserPreferences");
+                    b.ToTable("UserPreferences", (string)null);
 
                     b.HasData(
                         new

@@ -1,0 +1,17 @@
+@using ExpenseTrackerWebApp.Database.Models
+<MudPaper Elevation="0" Class="d-flex gap-3 align-end" Style="background: transparent;">
+    <MudIcon Icon="@category.Icon" Style="@($"color: {category.Color};")" Size="IconSize" />
+    <MudText Typo="TextSize">@category.Name</MudText>
+</MudPaper>
+
+
+@code{
+    [Parameter]
+    public Category category{get; set;}
+
+    [Parameter]
+    public Typo TextSize{get; set;} = Typo.body2;
+
+    [Parameter]
+    public Size IconSize{get;set;} = Size.Medium;
+}

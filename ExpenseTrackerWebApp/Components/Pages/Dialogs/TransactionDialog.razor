@@ -2,6 +2,7 @@
 @using ExpenseTrackerWebApp.Dtos
 @using ExpenseTrackerWebApp.Services
 @using Microsoft.AspNetCore.Authorization
+@using ExpenseTrackerWebApp.Components.MyComponents;
 @inject TransactionService TransactionService
 @inject CategoryService CategoryService
 @inject AccountService AccountService
@@ -40,7 +41,9 @@
                             Required="true" RequiredError="Category is required!">
                             @foreach (var category in Categories)
                             {
-                                <MudSelectItem Value="@((int?)category.Id)">@category.Name</MudSelectItem>
+                                <MudSelectItem Value="@((int?)category.Id)">
+                                    <CategoryName category="@category"></CategoryName>
+                                </MudSelectItem>
                             }
                         </MudSelect>
 
