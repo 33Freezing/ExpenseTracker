@@ -26,6 +26,7 @@ namespace ExpenseTrackerWebApp.Services
                 return;
             }
 
+            // this will also delete all the transactions due to foreign key constraints
             await _accountService.DeleteAllAsync();
             var bankAccount = new Account
             {
@@ -48,6 +49,7 @@ namespace ExpenseTrackerWebApp.Services
             await _categoryService.AssignUserDefaultCategories(userId);
             var categories = await _categoryService.GetAllAsync();
 
+            
             var random = new Random();
             var transactions = new List<Transaction>();
             var today = DateTime.Today;
