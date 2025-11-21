@@ -190,17 +190,18 @@ namespace ExpenseTrackerTests.Tests
             return new AccountService(context, currentUserService);
         }
 
-        public TransactionService CreateTransactionService(string userId)
+        public TransactionService CreateTransactionService(string userId, AccountService accountService)
         {
             var context = CreateContext();
             var currentUserService = new TestCurrentUserService(userId);
-            return new TransactionService(context, currentUserService);
+            var categoryService = new CategoryService(context, currentUserService);
+            return new TransactionService(context, currentUserService, accountService, categoryService);
         }
 
         public DashboardService CreateDashboardService(string userId)
         {
             var accountService = CreateAccountService(userId);
-            var transactionService = CreateTransactionService(userId);
+            var transactionService = CreateTransactionService(userId, accountService);
             return new DashboardService(transactionService, accountService);
         }
 

@@ -46,9 +46,8 @@ else
                                     <MudText Typo="Typo.h6">@account.Name</MudText>
                                 </MudCardHeader>
                                 <MudCardContent>
-                                    <MudPaper Elevation="0">
-                                        <MudText Style="font-size: 18px;">Balance: </MudText>
-                                            <AmountDisplay Balance="@account.CurrentBalance" FontSize="Typo.h4" />
+                                    <MudPaper Elevation="0" Class="d-flex flex-row gap-3 align-center">
+                                        <AmountDisplay Balance="@account.CurrentBalance" FontSize="Typo.h4" />
                                     </MudPaper>
                                 </MudCardContent>
                                 <MudCardActions>
