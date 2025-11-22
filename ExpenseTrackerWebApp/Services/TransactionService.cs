@@ -12,14 +12,16 @@ namespace ExpenseTrackerWebApp.Services
         private readonly ICurrentUserService _currentUserService;
         private readonly AccountService _accountService;
         private readonly CategoryService _categoryService;
+        private readonly TagService _tagService;
         
         public TransactionService(AppDbContext context, ICurrentUserService currentUserService,
-        AccountService accountService, CategoryService categoryService)
+        AccountService accountService, CategoryService categoryService, TagService tagService)
         {
             _context = context;
             _currentUserService = currentUserService;
             _accountService = accountService;
             _categoryService = categoryService;
+            _tagService = tagService;
         }
         // has 2 accounts
         // has two transactions this month, one income one expense
@@ -31,6 +33,8 @@ namespace ExpenseTrackerWebApp.Services
             return context.Transactions
             .Include(t => t.Account)
             .Include(t => t.Category)
+            .Include(t => t.TransactionTags)
+                .ThenInclude(tt => tt.Tag)
             .Where(t => t.Account.IdentityUserId == _currentUserService.GetUserId());
         }
         public async Task<List<Transaction>> GetAllAsync()
@@ -62,6 +66,9 @@ namespace ExpenseTrackerWebApp.Services
 
             await SaveInternal(transaction, (TransactionType)transactionDto.TransactionType);
             transactionDto.Id = transaction.Id;
+
+            // Set tags for the transaction
+            await _tagService.SetTransactionTagsAsync(transaction.Id, transactionDto.TagIds);
         }
 
         public async Task SaveAsync(Transaction transaction)
@@ -77,8 +84,8 @@ namespace ExpenseTrackerWebApp.Services
                 transaction.Amount = -transaction.Amount;
             }
 
-            transaction.Category = null;
-            transaction.Account = null;
+            transaction.Category = null!;
+            transaction.Account = null!;
 
             if (transaction.Id == 0)
             {
@@ -119,6 +126,7 @@ namespace ExpenseTrackerWebApp.Services
             result.Accounts = await _accountService.GetAllAsync();
             result.Categories = await _categoryService.GetAllAsync();
             result.FilteredCategories = result.Categories.ToList();
+            result.Tags = await _tagService.GetAllAsync();
             return result;
         }
     }

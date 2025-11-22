@@ -2,6 +2,7 @@ using ExpenseTrackerWebApp.Database;
 using ExpenseTrackerWebApp.Database.Models;
 using ExpenseTrackerWebApp.Dtos;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor;
 
 namespace ExpenseTrackerWebApp.Services
 {
@@ -38,6 +39,8 @@ namespace ExpenseTrackerWebApp.Services
                 Name = a.Name,
                 InitialBalance = a.InitialBalance,
                 CurrentBalance = a.InitialBalance + a.Transactions.Sum(t => t.Amount),
+                Icon = a.Icon,
+                Color = a.Color
             }).ToListAsync();
         }
 
@@ -45,7 +48,9 @@ namespace ExpenseTrackerWebApp.Services
         {
             if(string.IsNullOrWhiteSpace(accountDto.Name) ||
                 string.IsNullOrWhiteSpace(accountDto.UserId) ||
-                accountDto.InitialBalance == null)
+                accountDto.InitialBalance == null ||
+                string.IsNullOrWhiteSpace(accountDto.Icon) ||
+                string.IsNullOrWhiteSpace(accountDto.Color))
                 {
                     return;
                 }
@@ -55,7 +60,9 @@ namespace ExpenseTrackerWebApp.Services
                 Id = accountDto.Id ?? 0,
                 Name = accountDto.Name,
                 InitialBalance = (decimal)accountDto.InitialBalance,
-                IdentityUserId = accountDto.UserId
+                IdentityUserId = accountDto.UserId,
+                Icon = accountDto.Icon,
+                Color = accountDto.Color
             };
             await SaveInternal(account);
         }
@@ -105,11 +112,15 @@ namespace ExpenseTrackerWebApp.Services
                 {
                     Name = "Cash",
                     InitialBalance = 0,
+                    Icon = Icons.Material.Filled.Payments,
+                    Color = "#FF5733"
                 },
                 new()
                 {
                     Name = "Bank",
-                    InitialBalance = 0
+                    InitialBalance = 0,
+                    Icon = Icons.Material.Filled.AccountBalance,
+                    Color = "#33C1FF"
                 }
             };
 
@@ -119,6 +130,25 @@ namespace ExpenseTrackerWebApp.Services
                 account.IdentityUserId = userId;
                 await SaveAsync(account);
             }
+        }
+
+        public static List<string> GetDefaultAccountIcons()
+        {
+            return new List<string>
+            {
+                Icons.Material.Filled.Payments,
+                Icons.Material.Filled.AccountBalance,
+                Icons.Material.Filled.Wallet,
+                Icons.Material.Filled.CreditCard,
+                Icons.Material.Filled.Savings,
+                Icons.Material.Filled.AttachMoney,
+                Icons.Material.Filled.StoreMallDirectory,
+                Icons.Material.Filled.LocalAtm,
+                Icons.Material.Filled.MonetizationOn,
+                Icons.Material.Filled.PointOfSale,
+                Icons.Material.Filled.ShoppingCart,
+                Icons.Material.Filled.AccountBalanceWallet
+            };
         }
     }
 }

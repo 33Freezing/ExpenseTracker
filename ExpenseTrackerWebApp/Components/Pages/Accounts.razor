@@ -5,6 +5,7 @@
 @using ExpenseTrackerWebApp.Components.Pages.Dialogs
 @using Microsoft.AspNetCore.Authorization
 @using ExpenseTrackerWebApp.Components.MyComponents
+@using MudBlazor
 @inject AccountService AccountService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -43,7 +44,9 @@ else
                         <MudItem xs="12" md="6">
                             <MudCard Outlined="true" Class="pa-2 border-2">
                                 <MudCardHeader>
-                                    <MudText Typo="Typo.h6">@account.Name</MudText>
+                                    <MudPaper Elevation="0" Class="d-flex gap-2 align-center">
+                                        <AccountName account="@account.ToAccount()" TextSize="Typo.h6" IconSize="Size.Large"></AccountName>
+                                    </MudPaper>
                                 </MudCardHeader>
                                 <MudCardContent>
                                     <MudPaper Elevation="0" Class="d-flex flex-row gap-3 align-center">
@@ -107,9 +110,9 @@ else
     {
         var options = new DialogOptions { CloseOnEscapeKey = true };
         var parameters = new DialogParameters<ConfirmDialog>
-{
-{ x => x.Message, "Are you sure you want to delete the account and the related transactions? " }
-};
+        {
+            { x => x.Message, "Are you sure you want to delete the account and the related transactions? " }
+        };
 
         var dialog = await DialogService.ShowAsync<ConfirmDialog>(title: "", parameters, options);
         var result = await dialog.Result;

@@ -1,4 +1,3 @@
-
 using ExpenseTrackerWebApp.Database.Models;
 
 namespace ExpenseTrackerWebApp.Dtos
@@ -13,5 +12,6 @@ namespace ExpenseTrackerWebApp.Dtos
         public int? AccountId { get; set; }
         public int? CategoryId {get; set;}
         public TransactionType? TransactionType{get; set;}
+        public List<int> TagIds { get; set; } = new List<int>();
     }
 }

@@ -11,5 +11,11 @@ namespace ExpenseTrackerWebApp.Database.Models
         public Account Account { get; set; }
         public int CategoryId{ get; set; }
         public Category Category{ get; set; }
+        public ICollection<TransactionTag> TransactionTags { get; set; }
+
+        public Transaction()
+        {
+            TransactionTags = new List<TransactionTag>();
+        }
     }
 }

@@ -3,6 +3,7 @@
 @using ExpenseTrackerWebApp.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using MudBlazor
 @inject AccountService AccountService
 @inject ICurrentUserService CurrentUserService
 @inject ISnackbar Snackbar
@@ -26,9 +27,23 @@
                             Variant="Variant.Outlined" Required="true" RequiredError="Initial balace is required!"
                             Format="C2" Class="mt-4">
                         </MudNumericField>
+                        <MudPaper Elevation="0" Class="d-flex gap-4 mt-4">
+                            <MudSelect @bind-Value="AccountDto.Icon" Label="Icon" Variant="Variant.Outlined" Required="true"
+                                RequiredError="Icon is required!">
+                                @foreach (string? item in AccountService.GetDefaultAccountIcons())
+                                {
+                                    <MudSelectItem Value="@item" Style="display: inline-block; width: 40px; height: 40px; padding: 4px;">
+                                        <MudIcon Icon="@item" Style="@($"color:{AccountDto.Color};")" Size="Size.Medium" />
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudColorPicker @bind-Text="AccountDto.Color" Label="Color" Variant="Variant.Outlined" Required="true"
+                                RequiredError="Color is required!">
+                            </MudColorPicker>
+                        </MudPaper>
                     </MudForm>
                 </MudItem>
-                <MudItem xs="12" Class="d-flex justify-end gap-2 mt-6">
+                <MudItem xs="12" Class="d-flex justify-end gap-2 mt-12">
                     <MudButton OnClick="Cancel" Variant="Variant.Outlined">Cancel</MudButton>
                     <MudButton OnClick="Submit" Color="Color.Primary" Variant="Variant.Filled">Save</MudButton>
                 </MudItem>
@@ -79,7 +94,9 @@
             Id = account.Id,
             Name = account.Name,
             InitialBalance = account.InitialBalance,
-            UserId = account.IdentityUserId
+            UserId = account.IdentityUserId,
+            Icon = account.Icon,
+            Color = account.Color
         };
     }
 

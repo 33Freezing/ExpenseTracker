@@ -3,6 +3,7 @@ using System;
 using ExpenseTrackerWebApp.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExpenseTrackerWebApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251122123652_AddIconColorToAccounts")]
+    partial class AddIconColorToAccounts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
@@ -78,30 +81,6 @@ namespace ExpenseTrackerWebApp.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("ExpenseTrackerWebApp.Database.Models.Tag", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Color")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("IdentityUserId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdentityUserId");
-
-                    b.ToTable("Tags");
-                });
-
             modelBuilder.Entity("ExpenseTrackerWebApp.Database.Models.Transaction", b =>
                 {
                     b.Property<int>("Id")
@@ -131,21 +110,6 @@ namespace ExpenseTrackerWebApp.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Transactions");
-                });
-
-            modelBuilder.Entity("ExpenseTrackerWebApp.Database.Models.TransactionTag", b =>
-                {
-                    b.Property<int>("TransactionId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("TagId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("TransactionId", "TagId");
-
-                    b.HasIndex("TagId");
-
-                    b.ToTable("TransactionTags");
                 });
 
             modelBuilder.Entity("ExpenseTrackerWebApp.Database.Models.UserPreferences", b =>
@@ -414,17 +378,6 @@ namespace ExpenseTrackerWebApp.Migrations
                     b.Navigation("IdentityUser");
                 });
 
-            modelBuilder.Entity("ExpenseTrackerWebApp.Database.Models.Tag", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "IdentityUser")
-                        .WithMany()
-                        .HasForeignKey("IdentityUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("IdentityUser");
-                });
-
             modelBuilder.Entity("ExpenseTrackerWebApp.Database.Models.Transaction", b =>
                 {
                     b.HasOne("ExpenseTrackerWebApp.Database.Models.Account", "Account")
@@ -442,25 +395,6 @@ namespace ExpenseTrackerWebApp.Migrations
                     b.Navigation("Account");
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("ExpenseTrackerWebApp.Database.Models.TransactionTag", b =>
-                {
-                    b.HasOne("ExpenseTrackerWebApp.Database.Models.Tag", "Tag")
-                        .WithMany("TransactionTags")
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ExpenseTrackerWebApp.Database.Models.Transaction", "Transaction")
-                        .WithMany("TransactionTags")
-                        .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Tag");
-
-                    b.Navigation("Transaction");
                 });
 
             modelBuilder.Entity("ExpenseTrackerWebApp.Database.Models.UserPreferences", b =>
@@ -533,16 +467,6 @@ namespace ExpenseTrackerWebApp.Migrations
             modelBuilder.Entity("ExpenseTrackerWebApp.Database.Models.Category", b =>
                 {
                     b.Navigation("Transactions");
-                });
-
-            modelBuilder.Entity("ExpenseTrackerWebApp.Database.Models.Tag", b =>
-                {
-                    b.Navigation("TransactionTags");
-                });
-
-            modelBuilder.Entity("ExpenseTrackerWebApp.Database.Models.Transaction", b =>
-                {
-                    b.Navigation("TransactionTags");
                 });
 #pragma warning restore 612, 618
         }

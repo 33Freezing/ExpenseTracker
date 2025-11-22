@@ -1,0 +1,166 @@
+@using ExpenseTrackerWebApp.Database.Models
+@using MudBlazor
+
+<MudPaper Elevation="0" Class="d-flex gap-2 mt-4">
+    <MudAutocomplete T="Tag" @ref="tagAutocomplete" SearchFunc="@TagSearchFunc" ToStringFunc="@(e => e == null ? null : e.Name)" 
+        Label="Add Tags" Variant="Variant.Outlined" ValueChanged="@OnTagSelected" Clearable="true" 
+        Class="flex-grow-1">
+        <ItemTemplate>
+            <MudPaper Elevation="0" Class="d-flex gap-2">
+                @if (!string.IsNullOrEmpty(context?.Color))
+                {
+                    <MudPaper Elevation="0" Class="d-flex gap-2">
+                        <MudChip T="Tag" Style="@($"background-color:{context.Color}; color:white;")" Size="Size.Small">@context.Name</MudChip>
+                        <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Inherit" Style="color:white;"
+                            OnClick="@(() => DeleteTag(context))"></MudIconButton>
+                    </MudPaper>
+                }
+                else
+                {
+                    <MudText>@context?.Name</MudText>
+                }
+            </MudPaper>
+        </ItemTemplate>
+        <NoItemsTemplate>
+            <MudText Align="Align.Center" Class="px-4 py-1">
+                <span>No tags found </span>
+                @if(!string.IsNullOrWhiteSpace(tagAutocomplete?.Text))
+                {
+                    <MudPaper Elevation="0" Class="d-flex justify-center mt-2">
+                        <MudButton Variant="Variant.Outlined" OnClick="@CreateNewTag" 
+                            StartIcon="@Icons.Material.Filled.Add">
+                            Create new tag: <strong>@tagAutocomplete.Text</strong>
+                        </MudButton>
+                    </MudPaper>
+                }
+            </MudText>
+        </NoItemsTemplate>
+    </MudAutocomplete>
+</MudPaper>
+
+<MudPaper Elevation="0" Class="d-flex gap-2 mt-2 flex-wrap">
+    @foreach (var tag in SelectedTags)
+    {
+        <MudPaper Elevation="0" Class="flex gap-2">
+            <MudChip T="Tag" Style="@($"background-color:{tag.Color}; color:white;")" Size="Size.Medium">
+                <MudText Typo="Typo.body2">@tag.Name</MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Inherit" Style="color:white;"
+                    OnClick="@(() => RemoveTag(tag))"></MudIconButton>
+            </MudChip>
+        </MudPaper>
+    }
+</MudPaper>
+
+@code {
+    private MudAutocomplete<Tag>? tagAutocomplete;
+    private List<Tag> AllTags = new();
+
+    [Parameter]
+    public List<Tag> SelectedTags { get; set; } = new();
+
+    [Parameter]
+    public List<int> SelectedTagIds { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<List<Tag>> SelectedTagsChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<List<int>> SelectedTagIdsChanged { get; set; }
+
+    [Parameter]
+    public Func<Task<List<Tag>>>? LoadAllTags { get; set; }
+
+    [Parameter]
+    public Func<int, Task<Task>>? OnDeleteTag { get; set; }
+
+    [Parameter]
+    public Func<string, Task<Tag>>? OnCreateTag { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (LoadAllTags != null)
+        {
+            AllTags = await LoadAllTags.Invoke();
+        }
+    }
+
+    private async Task<IEnumerable<Tag>> TagSearchFunc(string searchText, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            var results = new List<Tag>(AllTags);
+            results.RemoveAll(t => SelectedTags.Any(st => st.Id == t.Id));
+            return results;
+        }
+
+        var filteredTags = AllTags
+            .Where(t => t.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            .Where(t => !SelectedTags.Any(st => st.Id == t.Id))
+            .ToList();
+
+        return await Task.FromResult(filteredTags);
+    }
+
+    private async Task OnTagSelected(Tag tag)
+    {
+        if (tag != null && !SelectedTags.Any(t => t.Id == tag.Id))
+        {
+            SelectedTags.Add(tag);
+            SelectedTagIds.Add(tag.Id);
+            
+            await SelectedTagsChanged.InvokeAsync(SelectedTags);
+            await SelectedTagIdsChanged.InvokeAsync(SelectedTagIds);
+
+            if (tagAutocomplete != null)
+            {
+                await tagAutocomplete.ResetAsync();
+            }
+        }
+    }
+
+    private async Task CreateNewTag()
+    {
+        if (string.IsNullOrWhiteSpace(tagAutocomplete?.Text))
+            return;
+
+        if (OnCreateTag != null)
+        {
+            var newTag = await OnCreateTag.Invoke(tagAutocomplete.Text);
+            AllTags.Add(newTag);
+            SelectedTags.Add(newTag);
+            SelectedTagIds.Add(newTag.Id);
+
+            await SelectedTagsChanged.InvokeAsync(SelectedTags);
+            await SelectedTagIdsChanged.InvokeAsync(SelectedTagIds);
+
+            if (tagAutocomplete != null)
+            {
+                await tagAutocomplete.ResetAsync();
+            }
+        }
+    }
+
+    private void RemoveTag(Tag tag)
+    {
+        SelectedTags.Remove(tag);
+        SelectedTagIds.Remove(tag.Id);
+    }
+
+    private async Task DeleteTag(Tag tag)
+    {
+        if (OnDeleteTag != null)
+        {
+            await OnDeleteTag.Invoke(tag.Id);
+            AllTags.RemoveAll(t => t.Id == tag.Id);
+            RemoveTag(tag);
+
+            await SelectedTagsChanged.InvokeAsync(SelectedTags);
+            await SelectedTagIdsChanged.InvokeAsync(SelectedTagIds);
+
+            if (tagAutocomplete != null)
+            {
+                await tagAutocomplete.ResetAsync();
+            }
+        }
+    }
+}

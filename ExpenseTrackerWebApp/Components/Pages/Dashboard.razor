@@ -94,7 +94,13 @@ else
                         </MudText>
                         <MudDataGrid T="Transaction" Items="@dashboardSummary.RecentTransactions" Class="mt-4">
                             <Columns>
-                                <PropertyColumn Property="t => t.Account.Name" Title="Account"></PropertyColumn>
+                                <TemplateColumn Title="Account">
+                                    <CellTemplate>
+                                        <MudPaper Elevation="0" Class="d-flex gap-2 align-center">
+                                            <AccountName account="@context.Item.Account"></AccountName>
+                                        </MudPaper>
+                                    </CellTemplate>
+                                </TemplateColumn>
                                 <TemplateColumn Title="Category">
                                     <CellTemplate>
                                         <CategoryName category="@context.Item.Category"></CategoryName>

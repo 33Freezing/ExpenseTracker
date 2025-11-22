@@ -13,6 +13,8 @@ namespace ExpenseTrackerWebApp.Database
         public virtual DbSet<Transaction> Transactions { get; set; }
         public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<Account> Accounts { get; set; }
+        public virtual DbSet<Tag> Tags { get; set; }
+        public virtual DbSet<TransactionTag> TransactionTags { get; set; }
         public virtual DbSet<UserPreferences> UserPreferences{get; set;}
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -50,6 +52,27 @@ namespace ExpenseTrackerWebApp.Database
                 .WithMany(a => a.Transactions)
                 .HasForeignKey(t => t.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Tag>()
+                .HasOne(t => t.IdentityUser)
+                .WithMany()
+                .HasForeignKey(t => t.IdentityUserId)
+                .IsRequired();
+
+            modelBuilder.Entity<TransactionTag>()
+                .HasKey(tt => new { tt.TransactionId, tt.TagId });
+
+            modelBuilder.Entity<TransactionTag>()
+                .HasOne(tt => tt.Transaction)
+                .WithMany(t => t.TransactionTags)
+                .HasForeignKey(tt => tt.TransactionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TransactionTag>()
+                .HasOne(tt => tt.Tag)
+                .WithMany(t => t.TransactionTags)
+                .HasForeignKey(tt => tt.TagId)
+                .OnDelete(DeleteBehavior.Cascade);
 
                 
             modelBuilder.Entity<Transaction>()

@@ -67,6 +67,7 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<AccountService>();
+builder.Services.AddScoped<TagService>();
 builder.Services.AddScoped<SeedDataService>();
 builder.Services.AddScoped<IdentityService>();
 builder.Services.AddScoped<UserPreferencesService>();
@@ -137,6 +138,30 @@ using (var scope = app.Services.CreateScope())
         {
             category.Color ??= "#A9A9A9";
             category.Icon ??= "Icons.Material.Filled.Category";
+        }
+        db.SaveChanges();
+    }
+
+    var accountsNeedingDefaults = db.Accounts
+        .Where(a => string.IsNullOrEmpty(a.Color) || string.IsNullOrEmpty(a.Icon))
+        .ToList();
+    
+    if (accountsNeedingDefaults.Any())
+    {
+        var iconColors = new[] { "#FF5733", "#33C1FF", "#33FF57", "#FF33A8" };
+        var icons = new[] 
+        { 
+            "Icons.Material.Filled.Payments", 
+            "Icons.Material.Filled.AccountBalance", 
+            "Icons.Material.Filled.Wallet",
+            "Icons.Material.Filled.CreditCard"
+        };
+        
+        for (int i = 0; i < accountsNeedingDefaults.Count; i++)
+        {
+            var account = accountsNeedingDefaults[i];
+            account.Color ??= iconColors[i % iconColors.Length];
+            account.Icon ??= icons[i % icons.Length];
         }
         db.SaveChanges();
     }

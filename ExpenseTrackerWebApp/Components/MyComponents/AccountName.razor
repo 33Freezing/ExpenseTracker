@@ -1,0 +1,20 @@
+@using ExpenseTrackerWebApp.Database.Models
+<MudPaper Elevation="0" Class="d-flex gap-3 align-end" Style="background: transparent;">
+@if (!string.IsNullOrEmpty(account.Icon))
+    {
+        <MudIcon Icon="@account.Icon" Style="@($"color: {account.Color};")" Size="IconSize" />
+    }
+    <MudText Typo="TextSize">@account.Name</MudText>
+</MudPaper>
+
+
+@code{
+    [Parameter]
+    public Account account{get; set;}
+
+    [Parameter]
+    public Typo TextSize{get; set;} = Typo.body2;
+
+    [Parameter]
+    public Size IconSize{get;set;} = Size.Medium;
+}

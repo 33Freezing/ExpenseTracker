@@ -3,9 +3,11 @@
 @using ExpenseTrackerWebApp.Services
 @using Microsoft.AspNetCore.Authorization
 @using ExpenseTrackerWebApp.Components.MyComponents;
+@using MudBlazor
 @inject TransactionService TransactionService
 @inject CategoryService CategoryService
 @inject AccountService AccountService
+@inject TagService TagService
 @inject ISnackbar Snackbar
 
 <title>Accounts</title>
@@ -62,6 +64,59 @@
                             Variant="Variant.Outlined">
                         </MudTextField>
 
+                        <MudPaper Elevation="0" Class="d-flex gap-2 mt-4">
+                            <MudAutocomplete T="Tag" @ref="tagAutocomplete" SearchFunc="@TagSearchFunc" ToStringFunc="@(e => e == null ? null : e.Name)" 
+                                Label="Add Tags" Variant="Variant.Outlined" ValueChanged="@OnTagSelected" Clearable="true" 
+                                Class="flex-grow-1">
+                                <ItemTemplate>
+                                    <MudPaper Elevation="0" Class="d-flex gap-2">
+                                        @if (!string.IsNullOrEmpty(context?.Color))
+                                        {
+                                            <MudPaper Elevation="0" Class="d-flex gap-2">
+
+                                                <MudChip T="Tag" Style="@($"background-color:{context.Color}; color:white;")" Size="Size.Small">@context.Name</MudChip>
+                                                
+                                        <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Inherit" Style="color:white;"
+                                            OnClick="@(() => DeleteTag(context))"></MudIconButton>
+                                            </MudPaper>
+                                        }
+                                        else
+                                        {
+                                            <MudText>@context?.Name</MudText>
+                                        }
+                                    </MudPaper>
+                                </ItemTemplate>
+                                <NoItemsTemplate>
+                                    <MudText Align="Align.Center" Class="px-4 py-1">
+                                        <span>No tags found </span>
+                                        @if(!string.IsNullOrWhiteSpace(tagAutocomplete?.Text))
+                                        {
+                                            <MudPaper Elevation="0" Class="d-flex justify-center mt-2">
+                                                <MudButton Variant="Variant.Outlined" OnClick="@CreateNewTag" 
+                                                    StartIcon="@Icons.Material.Filled.Add">
+                                                    Create new tag: <strong>@tagAutocomplete.Text</strong>
+                                                </MudButton>
+                                            </MudPaper>
+                                        }
+                                        
+                                    </MudText>
+                                </NoItemsTemplate>
+                            </MudAutocomplete>
+                        </MudPaper>
+
+                        <MudPaper Elevation="0" Class="d-flex gap-2 mt-2 flex-wrap">
+                            @foreach (var tag in SelectedTags)
+                            {
+                                <MudPaper Elevation="0" Class="flex gap-2">
+                                    <MudChip T="Tag" Style="@($"background-color:{tag.Color}; color:white;")" Size="Size.Medium">
+                                        <MudText Typo="Typo.body2">@tag.Name</MudText>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Inherit" Style="color:white;"
+                                            OnClick="@(() => RemoveTag(tag))"></MudIconButton>
+                                    </MudChip>
+                                </MudPaper>
+                            }
+                        </MudPaper>
+
                     </MudForm>
                 </MudItem>
                 <MudItem xs="12" Class="d-flex justify-end gap-2 mt-6">
@@ -75,16 +130,20 @@
 }
 
 @code {
-    MudForm form;
+    MudForm? form;
+    MudAutocomplete<Tag>? tagAutocomplete;
+    Tag? selectedTag;
+    private List<Tag> AllTags = new();
+    private List<Tag> SelectedTags = new();
 
     [CascadingParameter]
-    private IMudDialogInstance MudDialog { get; set; }
+    private IMudDialogInstance? MudDialog { get; set; }
 
     [Parameter]
     public int? TransactionId { get; set; }
-    private List<Category> Categories { get; set; }
-    private List<Account> Accounts { get; set; }
-    private TransactionDto TransactionDto { get; set; }
+    private List<Category>? Categories { get; set; }
+    private List<Account>? Accounts { get; set; }
+    private TransactionDto? TransactionDto { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -106,6 +165,8 @@
             return;
         }
 
+        AllTags = await TagService.GetAllAsync();
+
         TransactionDto = new TransactionDto();
         TransactionDto.AccountId = Accounts.First().Id;
         TransactionDto.CategoryId = Categories.First().Id;
@@ -113,6 +174,7 @@
         TransactionDto.Date = DateTime.Now;
         TransactionDto.Time = DateTime.Now.TimeOfDay;
         TransactionDto.Amount = 0;
+        SelectedTags = new();
 
         if (TransactionId != null)
         {
@@ -133,12 +195,87 @@
                 Date = transaction.Date.Date,
                 Time = transaction.Date.TimeOfDay,
                 Description = transaction.Description,
-                TransactionType = transaction.Category.Type
+                TransactionType = transaction.Category.Type,
+                TagIds = transaction.TransactionTags.Select(tt => tt.TagId).ToList()
             };
+
+            SelectedTags = transaction.TransactionTags.Select(tt => tt.Tag).ToList();
         }
 
 
         Categories = Categories.Where(c => c.Type == TransactionDto.TransactionType).ToList();
+    }
+
+    private async Task<IEnumerable<Tag>> TagSearchFunc(string searchText, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            var results = new List<Tag>(AllTags);
+            results.RemoveAll(t => SelectedTags.Any(st => st.Id == t.Id));
+            return results;
+        }
+
+        var filteredTags = AllTags
+            .Where(t => t.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            .Where(t => !SelectedTags.Any(st => st.Id == t.Id))
+            .ToList();
+
+        return await Task.FromResult(filteredTags);
+    }
+
+    private async Task OnTagSelected(Tag tag)
+    {
+        if (tag != null && !SelectedTags.Any(t => t.Id == tag.Id))
+        {
+            SelectedTags.Add(tag);
+            TransactionDto.TagIds.Add(tag.Id);
+            selectedTag = null;
+            if (tagAutocomplete != null)
+            {
+                await tagAutocomplete.ResetAsync();
+            }
+        }
+    }
+
+    private async Task CreateNewTag()
+    {
+        if (string.IsNullOrWhiteSpace(tagAutocomplete?.Text))
+            return;
+
+        try
+        {
+            var newTag = await TagService.SaveAsync(tagAutocomplete.Text, "#9E9E9E");
+            AllTags.Add(newTag);
+            SelectedTags.Add(newTag);
+            TransactionDto.TagIds.Add(newTag.Id);
+            selectedTag = null;
+            if (tagAutocomplete != null)
+            {
+                await tagAutocomplete.ResetAsync();
+            }
+            Snackbar.Add($"Tag '{newTag.Name}' created!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error creating tag: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void RemoveTag(Tag tag)
+    {
+        SelectedTags.Remove(tag);
+        TransactionDto.TagIds.Remove(tag.Id);
+    }
+
+    private async Task DeleteTag(Tag tag){
+        await TagService.DeleteAsync(tag.Id);
+        AllTags.RemoveAll(t => t.Id == tag.Id);
+        RemoveTag(tag);
+        Snackbar.Add("Tag deleted successfully!", Severity.Success);
+        if (tagAutocomplete != null)
+        {
+            await tagAutocomplete.ResetAsync();
+        }
     }
 
     private async Task Submit()

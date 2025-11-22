@@ -195,7 +195,8 @@ namespace ExpenseTrackerTests.Tests
             var context = CreateContext();
             var currentUserService = new TestCurrentUserService(userId);
             var categoryService = new CategoryService(context, currentUserService);
-            return new TransactionService(context, currentUserService, accountService, categoryService);
+            var tagService = new TagService(context, currentUserService);
+            return new TransactionService(context, currentUserService, accountService, categoryService, tagService);
         }
 
         public DashboardService CreateDashboardService(string userId)

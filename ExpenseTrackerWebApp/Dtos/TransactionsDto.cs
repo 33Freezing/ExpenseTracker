@@ -11,6 +11,7 @@ namespace ExpenseTrackerWebApp.Dtos
         public List<Account> Accounts { get; set; }
         public List<Category> Categories { get; set; }
         public List<Category> FilteredCategories{get; set;}
+        public List<Tag> Tags { get; set; }
         private TransactionType? typeFilter;
         public TransactionType? TypeFilter
         {
@@ -69,6 +70,20 @@ namespace ExpenseTrackerWebApp.Dtos
             }
         }
 
+        private IEnumerable<Tag> tagsFilter;
+        public IEnumerable<Tag> TagsFilter
+        {
+            get
+            {
+                return tagsFilter;
+            }
+            set
+            {
+                tagsFilter = value;
+                FilterChanged();
+            }
+        }
+
         public TransactionsDto()
         {
             Transactions = [];
@@ -76,10 +91,12 @@ namespace ExpenseTrackerWebApp.Dtos
             Accounts = [];
             Categories = [];
             FilteredCategories = [];
+            Tags = [];
             TypeFilter = null;
             DateFilter = null;
             AccountsFilter = [];
             CategoriesFilter = [];
+            TagsFilter = [];
         }
 
         private void FilterChanged()
@@ -100,6 +117,12 @@ namespace ExpenseTrackerWebApp.Dtos
             {
                 var categoryIds = CategoriesFilter.Select(a => a.Id).ToList();
                 FilteredTransactions = FilteredTransactions.Where(t => categoryIds.Contains(t.CategoryId)).ToList();
+            }
+
+            if (TagsFilter is not null && TagsFilter.Count() != 0)
+            {
+                var tagIds = TagsFilter.Select(t => t.Id).ToList();
+                FilteredTransactions = FilteredTransactions.Where(t => t.TransactionTags.Any(tt => tagIds.Contains(tt.TagId))).ToList();
             }
 
             if (DateFilter is not null)
@@ -141,7 +164,8 @@ namespace ExpenseTrackerWebApp.Dtos
                 return TypeFilter != null
                     || (CategoriesFilter != null && CategoriesFilter.Count() != 0)
                     || DateFilter != null
-                    || (AccountsFilter != null && AccountsFilter.Count() != 0);
+                    || (AccountsFilter != null && AccountsFilter.Count() != 0)
+                    || (TagsFilter != null && TagsFilter.Count() != 0);
             }
         }
 
@@ -151,6 +175,7 @@ namespace ExpenseTrackerWebApp.Dtos
             CategoriesFilter = new HashSet<Category>() { };
             AccountsFilter = new HashSet<Account>() { };
             DateFilter = null;
+            TagsFilter = new HashSet<Tag>() { };
         }
     
         public void RemoveTransactions(int id)

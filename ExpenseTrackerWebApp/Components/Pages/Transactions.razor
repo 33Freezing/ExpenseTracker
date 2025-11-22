@@ -60,7 +60,9 @@ else
                                 MultiSelection="true" Clearable="true" FullWidth="true">
                                 @foreach (var account in TransactionsDto.Accounts)
                                 {
-                                    <MudSelectItem Value="@(account)">@account.Name</MudSelectItem>
+                                    <MudSelectItem Value="@(account)">
+                                        <AccountName account="@account"></AccountName>
+                                    </MudSelectItem>
                                 }
                             </MudSelect>
                             <MudSelect T="DateFilterPreset ?" Label="Date" @bind-Value="TransactionsDto.DateFilter"
@@ -96,6 +98,19 @@ else
                             </MudSelect>
                         </MudPaper>
                     </MudItem>
+                    <MudItem xs="12" md="5">
+                        <MudSelect T="Tag" Label="Tags" @bind-SelectedValues="TransactionsDto.TagsFilter" MultiSelectionTextFunc="@(new Func<List<string>, string>(GetTagsMultiSelectionText))"
+                            MultiSelection="true" Clearable="true" FullWidth="true">
+                            @foreach (var tag in TransactionsDto.Tags)
+                            {
+                                <MudSelectItem Value="@(tag)">
+                                    <MudChip T="Tag" Style="@($"background-color:{tag.Color}; color:white;")" Size="Size.Small" Variant="Variant.Filled">
+                                        @tag.Name
+                                    </MudChip>
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
                     <MudItem xs="12" md="2" Class="d-flex justify-center align-end">
                         <MudButton Variant="Variant.Outlined" OnClick="@TransactionsDto.ClearFilters" Disabled="@(!TransactionsDto.AreAnyFiltersActive)"
                             StartIcon="@Icons.Material.Filled.FilterListOff">Clear
@@ -120,8 +135,14 @@ else
                             <MudPaper Outlined="true" Elevation="1" Class="border-2">
                                 <MudDataGrid T="Transaction" Items="@TransactionsDto.FilteredTransactions" Virtualize="true" Height="700px">
                                     <Columns>
-                                    <PropertyColumn Property="t => t.Account.Name" Title="Account"></PropertyColumn>
-                                    <TemplateColumn Property="t => t.Category.Name" Title="Category" SortBy="t => t.Category.Name" Sortable="true">
+                                    <TemplateColumn Title="Account">
+                                        <CellTemplate>
+                                            <MudPaper Elevation="0" Class="d-flex gap-2 align-center">
+                                                <AccountName account="@context.Item.Account"></AccountName>
+                                            </MudPaper>
+                                        </CellTemplate>
+                                    </TemplateColumn>
+                                    <TemplateColumn Title="Category" SortBy="t => t.Category.Name" Sortable="true">
                                         <CellTemplate>
                                             <CategoryName category="@context.Item.Category"></CategoryName>
                                         </CellTemplate>
@@ -130,6 +151,18 @@ else
                                         <TemplateColumn Title="Amount" SortBy="t => t.Amount" Sortable="true">
                                             <CellTemplate>
                                                 <AmountDisplay Balance="context.Item.Amount" />
+                                            </CellTemplate>
+                                        </TemplateColumn>
+                                        <TemplateColumn Title="Tags">
+                                            <CellTemplate>
+                                                <MudPaper Elevation="0" Class="d-flex gap-1 flex-wrap">
+                                                    @foreach (var tag in context.Item.TransactionTags)
+                                                    {
+                                                        <MudChip T="string" Style="@($"background-color:{tag.Tag.Color}; color:white;")" Size="Size.Small" Variant="Variant.Filled">
+                                                            @tag.Tag.Name
+                                                        </MudChip>
+                                                    }
+                                                </MudPaper>
                                             </CellTemplate>
                                         </TemplateColumn>
                                         <TemplateColumn>
@@ -170,7 +203,7 @@ else
 
     private string username = "";
     bool loading = true;
-    private TransactionsDto TransactionsDto{get; set;}
+    private TransactionsDto? TransactionsDto{get; set;}
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
@@ -244,6 +277,10 @@ else
 
     private string GetCategoriesMultiSelectionText(List<string> selectedCategories){
         return string.Join(separator: ", ", selectedCategories);
+    }
+
+    private string GetTagsMultiSelectionText(List<string> selectedTags){
+        return string.Join(separator: ", ", selectedTags);
     }
 
     private async Task AddTestData()
