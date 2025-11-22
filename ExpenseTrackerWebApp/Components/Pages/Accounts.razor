@@ -42,26 +42,7 @@ else
                     @foreach (var account in MyAccounts)
                     {
                         <MudItem xs="12" md="6">
-                            <MudCard Outlined="true" Class="pa-2 border-2">
-                                <MudCardHeader>
-                                    <MudPaper Elevation="0" Class="d-flex gap-2 align-center">
-                                        <AccountName account="@account.ToAccount()" TextSize="Typo.h6" IconSize="Size.Large"></AccountName>
-                                    </MudPaper>
-                                </MudCardHeader>
-                                <MudCardContent>
-                                    <MudPaper Elevation="0" Class="d-flex flex-row gap-3 align-center">
-                                        <AmountDisplay Balance="@account.CurrentBalance" FontSize="Typo.h4" />
-                                    </MudPaper>
-                                </MudCardContent>
-                                <MudCardActions>
-                                    <MudPaper Class="pa-1 d-flex flex-grow-1 justify-space-between mt-3" Elevation="0">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary"
-                                            OnClick="@(() => OpenAccountDialogAsync(account.Id))"></MudIconButton>
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
-                                            OnClick="@(() => ConfirmDelete(account.Id))"></MudIconButton>
-                                    </MudPaper>
-                                </MudCardActions>
-                            </MudCard>
+                            <AccountCard account="@account.ToAccount()" balance="@account.CurrentBalance" OnEdit="@(() => OpenAccountDialogAsync(account.Id))" OnDelete="@(() => ConfirmDelete(account.Id))"></AccountCard>
                         </MudItem>
                     }
                 }

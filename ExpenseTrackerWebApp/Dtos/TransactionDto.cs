@@ -13,5 +13,7 @@ namespace ExpenseTrackerWebApp.Dtos
         public int? CategoryId {get; set;}
         public TransactionType? TransactionType{get; set;}
         public List<int> TagIds { get; set; } = new List<int>();
+        public bool? Reoccuring{get; set;}
+        public ReoccuranceFrequency? ReoccuranceFrequency{get; set;}
     }
 }

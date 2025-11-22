@@ -1,33 +1,100 @@
 @using ExpenseTrackerWebApp.Database.Models
-<MudCard Outlined="true" Class="pa-2 border-2">
-<MudCardHeader>
-    <CategoryName category="@category" TextSize="Typo.h6" IconSize="Size.Large"></CategoryName>
-</MudCardHeader>
-<MudCardContent>
-@if(category.Transactions != null){
-    <MudText Typo="Typo.body1">Total transactions: @category.Transactions.Count</MudText>
-    <MudPaper Elevation="0" Class="d-flex gap-2">
-        <MudText Typo="Typo.body1">@(category.Type == TransactionType.Income ? "Total income: " : "Total expenses: ")</MudText>
-        <AmountDisplay Balance="@category.Transactions.Sum(t => t.Amount)" FontSize="Typo.body1" />
-    </MudPaper>
-    
+@using MudBlazor
+
+<EntityCard OnEdit="@(() => OpenCategoryDialogAsync.InvokeAsync(category?.Id))" OnDelete="@(() => ConfirmDelete.InvokeAsync(category?.Id ?? 0))">
+    <HeaderContent>
+        <CategoryName category="@category" TextSize="Typo.h6" IconSize="Size.Large"></CategoryName>
+    </HeaderContent>
+    <Content>
+        @if(category?.Transactions != null){
+            <MudText Typo="Typo.body1">Total transactions: @category.Transactions.Count</MudText>
+            <MudPaper Elevation="0" Class="d-flex gap-2 mb-3">
+                <MudText Typo="Typo.body1">@(category.Type == TransactionType.Income ? "Total income: " : "Total expenses: ")</MudText>
+                <AmountDisplay Balance="@category.Transactions.Sum(t => t.Amount)" FontSize="Typo.body1" />
+            </MudPaper>
+            <MudPaper Elevation="0" Class="d-flex gap-2 align-center">
+                <MudText Typo="Typo.body1" Class="flex-grow-1">vs Last Month:</MudText>
+                <MudText Typo="Typo.body1" Color="@GetComparisonColor()" Class="month-comparison">
+                    @GetComparisonDisplay()
+                </MudText>
+            </MudPaper>
+        }
+    </Content>
+</EntityCard>
+
+<style>
+.month-comparison {
+    font-weight: 700;
+    font-size: 1.1em;
 }
-</MudCardContent>
-<MudCardActions>
-<MudPaper Class="pa-1 d-flex flex-grow-1 justify-space-between mt-3" Elevation="0">
-    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => OpenCategoryDialogAsync.InvokeAsync(category.Id))"></MudIconButton>
-    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => ConfirmDelete.InvokeAsync(category.Id))"></MudIconButton>
-</MudPaper>
-</MudCardActions>
-</MudCard>
+</style>
 
 @code{
     [Parameter]
-    public Category category { get; set; }
+    public Category? category { get; set; }
 
     [Parameter]
     public EventCallback<int?> OpenCategoryDialogAsync { get; set; }
 
     [Parameter]
     public EventCallback<int> ConfirmDelete { get; set; }
+
+    private Color GetComparisonColor()
+    {
+        if (category?.Transactions == null || category.Transactions.Count == 0)
+            return Color.Default;
+
+        var currentMonthTotal = GetCurrentMonthTotal();
+        var lastMonthTotal = GetLastMonthTotal();
+
+        if (lastMonthTotal == 0)
+            return Color.Default;
+
+        if (currentMonthTotal < lastMonthTotal)
+            return Color.Success;
+        else if (currentMonthTotal > lastMonthTotal)
+            return Color.Error;    
+        else
+            return Color.Default;
+    }
+
+    private string GetComparisonDisplay()
+    {
+        if (category?.Transactions == null || category.Transactions.Count == 0)
+            return "—";
+
+        var currentMonthTotal = GetCurrentMonthTotal();
+        var lastMonthTotal = GetLastMonthTotal();
+
+        if (lastMonthTotal == 0)
+            return "—";
+
+        var percentChange = lastMonthTotal == 0 ? 0 : Math.Abs(((currentMonthTotal - lastMonthTotal) / lastMonthTotal) * 100);
+        var indicator = currentMonthTotal < lastMonthTotal ? "↓" : (currentMonthTotal > lastMonthTotal ? "↑" : "—");
+
+        return $"{indicator} {Math.Round(percentChange, 1)}%";
+    }
+
+    private decimal GetCurrentMonthTotal()
+    {
+        if (category?.Transactions == null)
+            return 0;
+
+        var now = DateTime.Now;
+        return category.Transactions
+            .Where(t => t.Date.Year == now.Year && t.Date.Month == now.Month)
+            .Sum(t => t.Amount);
+    }
+
+    private decimal GetLastMonthTotal()
+    {
+        if (category?.Transactions == null)
+            return 0;
+
+        var now = DateTime.Now;
+        var lastMonth = now.AddMonths(-1);
+        return category.Transactions
+            .Where(t => t.Date.Year == lastMonth.Year && t.Date.Month == lastMonth.Month)
+            .Sum(t => t.Amount);
+    }
 }

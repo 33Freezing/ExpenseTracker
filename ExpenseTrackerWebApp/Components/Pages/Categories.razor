@@ -33,44 +33,12 @@ else
                     </MudItem>
                     <MudItem xs="12">
                         <MudTabs @ref="tabs" Elevation="0" ApplyEffectsToContainer="true" PanelClass="pa-6" Centered="true">
-                            <MudTabPanel Text="Expense" > 
-                                @if(MyCategories.Count(c => c.Type == TransactionType.Expense) == 0){
-                                    <MudItem xs="12" Class="d-flex justify-center mt-4">
-                                        <MudText Typo="Typo.h5">No expense categories found!</MudText>
-                                    </MudItem>
-                                }
-                                else{
-                                    <MudPaper Elevation="0">
-                                        <MudGrid>
-                                            @foreach(var category in MyCategories.Where(c => c.Type == TransactionType.Expense)){
-                                                <MudItem xs="12" md="6">
-                                                    <CategoryCard category="category" OpenCategoryDialogAsync="OpenCategoryDialogAsync" ConfirmDelete="ConfirmDelete"></CategoryCard>
-                                                </MudItem>
-                                                }
-                                        </MudGrid>
-                                    </MudPaper>
-                                    
-                                }
-                                </MudTabPanel>
-                            
-                            <MudTabPanel Text="Income">
-                                @if(MyCategories.Count(c => c.Type == TransactionType.Income) == 0){
-                                    <MudItem xs="12" Class="d-flex justify-center mt-4">
-                                        <MudText Typo="Typo.h5">No income categories found!</MudText>
-                                    </MudItem>
-                                }
-                                else{
-                                    <MudPaper Elevation="0">
-                                        <MudGrid>
-                                                @foreach(var category in MyCategories.Where(c => c.Type == TransactionType.Income)){
-                                                    <MudItem xs="12" md="6">
-                                                        <CategoryCard category="category" OpenCategoryDialogAsync="OpenCategoryDialogAsync" ConfirmDelete="ConfirmDelete"></CategoryCard>
-                                                    </MudItem>
-                                                }
-                                        </MudGrid>
-                                    </MudPaper>
-                                }
-                                </MudTabPanel>
+                            <MudTabPanel Text="Expense" Icon="@Icons.Material.Filled.TrendingDown">
+                                @RenderCategoryContent(TransactionType.Expense)
+                            </MudTabPanel>
+                            <MudTabPanel Text="Income" Icon="@Icons.Material.Filled.TrendingUp">
+                                @RenderCategoryContent(TransactionType.Income)
+                            </MudTabPanel>
                         </MudTabs>
                     </MudItem>
                     
@@ -82,10 +50,9 @@ else
 
 
 @code {
-    private MudTabs tabs;
-    private List<Category> MyCategories {get; set;}
+    private MudTabs? tabs;
+    private List<Category>? MyCategories { get; set; }
     private TransactionType? transactionType;
-
 
     bool loading = true;
     protected override async Task OnInitializedAsync()
@@ -106,12 +73,12 @@ else
         var parameters = new DialogParameters<CategoryDialog>
         {
             { x => x.CategoryId, category_id },
-            { x => x.Type, tabs.ActivePanelIndex == 0 ? TransactionType.Expense : TransactionType.Income }
+            { x => x.Type, tabs?.ActivePanelIndex == 0 ? TransactionType.Expense : TransactionType.Income }
         };
 
         var dialog = await DialogService.ShowAsync<CategoryDialog>(title: "", parameters, options);
         var result = await dialog.Result;
-        if (!result.Canceled)
+        if (result != null && !result.Canceled)
         {
             await RefreshPage();
             StateHasChanged();
@@ -130,7 +97,7 @@ else
 
         var dialog = await DialogService.ShowAsync<ConfirmDialog>(title: "", parameters, options);
         var result = await dialog.Result;
-        if (!result.Canceled)
+        if (result != null && !result.Canceled)
         {
             await CategoryService.DeleteAsync(category_id);
             Snackbar.Add("Category succesfully deleted! ", Severity.Success);
@@ -145,4 +112,26 @@ else
             MyCategories = MyCategories.Where(c => c.Type == transactionType).ToList();
         }
     }
+
+    private RenderFragment RenderCategoryContent(TransactionType type) => @<text>
+        @if(MyCategories == null || MyCategories.Count(c => c.Type == type) == 0)
+        {
+            <MudItem xs="12" Class="d-flex justify-center mt-4">
+                <MudText Typo="Typo.h5">No @(type == TransactionType.Expense ? "expense" : "income") categories found!</MudText>
+            </MudItem>
+        }
+        else
+        {
+            <MudPaper Elevation="0">
+                <MudGrid>
+                    @foreach(var category in MyCategories.Where(c => c.Type == type))
+                    {
+                        <MudItem xs="12" md="6">
+                            <CategoryCard category="@category" OpenCategoryDialogAsync="OpenCategoryDialogAsync" ConfirmDelete="ConfirmDelete"></CategoryCard>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudPaper>
+        }
+    </text>;
 }

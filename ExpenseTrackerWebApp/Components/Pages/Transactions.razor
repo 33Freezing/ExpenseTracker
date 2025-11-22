@@ -16,7 +16,7 @@
 @inject ISnackbar Snackbar
 @inject SeedDataService SeedDataService
 
-<PageTitle>Transactions</PageTitle>
+<PageTitle>@(Reoccuring ? "Reoccuring Transactions" : "Transactions")</PageTitle>
 
 
 @if (loading)
@@ -31,17 +31,17 @@ else
         <MudPaper Class="pa-6 mt-6" Elevation="15">
                 <MudGrid>
                     <MudItem xs="12" Class="d-flex justify-center">
-                        <MudText Typo="Typo.h4">Transactions</MudText>
+                        <MudText Typo="Typo.h4">@(Reoccuring ? "Reoccuring Transactions" : "Transactions")</MudText>
                     </MudItem>
                     <MudItem xs="12" Class="d-flex justify-space-between gap-5 mb-4 ">
-                    <MudPaper Elevation="0" Class="d-flex gap-2">
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                            OnClick="@(() => OpenTransactionDialogAsync(null))" StartIcon="@Icons.Material.Filled.Add">Add
-                        </MudButton>
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                            OnClick="Refresh" StartIcon="@Icons.Material.Filled.Refresh">Refresh
-                        </MudButton>
-                    </MudPaper>
+                        <MudPaper Elevation="0" Class="d-flex gap-2">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                OnClick="@(() => OpenTransactionDialogAsync(null))" StartIcon="@Icons.Material.Filled.Add">Add
+                            </MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                OnClick="RefreshTransctions" StartIcon="@Icons.Material.Filled.Refresh">Refresh
+                            </MudButton>
+                        </MudPaper>
                         <MudPaper Elevation="0" Class="d-flex gap-2">
                             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@OpenExportDialog"
                                 StartIcon="@Icons.Material.Filled.ImportExport">Export</MudButton>
@@ -52,7 +52,6 @@ else
                                 </MudButton>
                             }
                         </MudPaper>
-
                     </MudItem>
                     <MudItem xs="12" md="5">
                         <MudPaper Elevation="0" Class="d-flex gap-5">
@@ -147,7 +146,7 @@ else
                                             <CategoryName category="@context.Item.Category"></CategoryName>
                                         </CellTemplate>
                                     </TemplateColumn>
-                                        <PropertyColumn Property="t => t.Date" Format="dd//MM/yyyy" Title="Date"></PropertyColumn>
+                                        <PropertyColumn Property="t => t.Date" Format="dd/MM/yyyy" Title="Date"></PropertyColumn>
                                         <TemplateColumn Title="Amount" SortBy="t => t.Amount" Sortable="true">
                                             <CellTemplate>
                                                 <AmountDisplay Balance="context.Item.Amount" />
@@ -198,16 +197,21 @@ else
 }
 
 @code {
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Reoccuring { get; set; } = false;
+
     [CascadingParameter]
     private Task<AuthenticationState>? authenticationState { get; set; }
 
     private string username = "";
     bool loading = true;
     private TransactionsDto? TransactionsDto{get; set;}
-    protected override async Task OnInitializedAsync()
+
+    protected override async Task OnParametersSetAsync()
     {
-        await base.OnInitializedAsync();
-        TransactionsDto = await TransactionService.GetTransactionsDto();
+        TransactionsDto = await TransactionService.GetTransactionsDto(Reoccuring);
 
         if (authenticationState is not null)
         {
@@ -221,7 +225,6 @@ else
         }
         loading = false;
     }
-
     private async Task OpenTransactionDialogAsync(int? transaction_id)
     {
         if (TransactionsDto.Categories.Count == 0)
@@ -245,12 +248,14 @@ else
         };
         var parameters = new DialogParameters<TransactionDialog>
         {
-            { x => x.TransactionId, transaction_id }
+            { x => x.TransactionId, transaction_id },
+            { x => x.Reoccuring, Reoccuring }
         };
 
         var dialog = await DialogService.ShowAsync<TransactionDialog>(title: "Simple Dialog", parameters, options);
         var result = await dialog.Result;
-        TransactionsDto = await TransactionService.GetTransactionsDto();
+        var transactions = await TransactionService.GetAllAsync(Reoccuring);
+        TransactionsDto.RefreshTransactions(transactions);
     }
 
     private async Task ConfirmDelete(int transaction_id)
@@ -286,7 +291,8 @@ else
     private async Task AddTestData()
     {
         await SeedDataService.SeedDummyDataAsync();
-        StateHasChanged();
+        var transactions = await TransactionService.GetAllAsync(Reoccuring);
+        TransactionsDto.RefreshTransactions(transactions);
     }
 
     private async Task OpenExportDialog()
@@ -312,9 +318,9 @@ else
         var dialog = await DialogService.ShowAsync<ExportDialog>(title: "", parameters, options);
     }
 
-    private async Task Refresh(){
-        TransactionsDto = await TransactionService.GetTransactionsDto();
-        Snackbar.Add("Refresh succesfull!", Severity.Success);
+    private async Task RefreshTransctions(){
+        var transactions = await TransactionService.GetAllAsync(Reoccuring);
+        TransactionsDto.RefreshTransactions(transactions);
+        Snackbar.Add("Transactions were refreshed!", Severity.Success);
     }
-
 }

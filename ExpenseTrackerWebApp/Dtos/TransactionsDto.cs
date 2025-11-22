@@ -193,6 +193,11 @@ namespace ExpenseTrackerWebApp.Dtos
             }
         }
 
+        public void RefreshTransactions(List<Transaction> transactions){
+            Transactions = transactions;
+            FilterChanged();
+        }
+
 
     }
 

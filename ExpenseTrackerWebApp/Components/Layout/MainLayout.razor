@@ -43,11 +43,14 @@
             </MudDrawerHeader>
             <MudNavMenu>
                 <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.CompareArrows" OnClick="@(() => RedirectToTransctions(false))">
+                    Transactions</MudNavLink>
                 <MudNavLink Href="accounts" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.AccountBalance">Accounts
                 </MudNavLink>
-                <MudNavLink Href="transactions" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.CompareArrows">
-                    Transactions</MudNavLink>
                 <MudNavLink Href="categories" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Category">Categories
+                </MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Category" OnClick="@(() => RedirectToTransctions(true))">
+                Reoccuring transactions
                 </MudNavLink>
             </MudNavMenu>
         </MudDrawer>
@@ -146,4 +149,10 @@
             }
         }, true);
     }
+
+    private void RedirectToTransctions(bool reoccuring)
+    {
+        NavigationManager.NavigateTo($"/transactions?reoccuring={reoccuring}", forceLoad: true);
+    }
+
 }

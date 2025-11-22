@@ -10,10 +10,12 @@ namespace ExpenseTrackerWebApp.Controllers
     public class AuthController : Controller
     {
         private readonly IdentityService _identityService; 
+        private readonly TransactionService _transactionService;
 
-        public AuthController(IdentityService identityService)
+        public AuthController(IdentityService identityService, TransactionService transactionService)
         {
             _identityService = identityService;
+            _transactionService = transactionService;
         }
 
         [HttpGet("login")]
@@ -24,6 +26,7 @@ namespace ExpenseTrackerWebApp.Controllers
             
             if (result.Succeeded)
             {
+                await _transactionService.CheckForReoccuringTransactions();
                 return Redirect("/");
             }
             

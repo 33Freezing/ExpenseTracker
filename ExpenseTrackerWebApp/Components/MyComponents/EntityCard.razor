@@ -1,0 +1,59 @@
+@using MudBlazor
+@using Microsoft.AspNetCore.Components
+
+<MudCard Outlined="true" Class="pa-2 border-2 entity-card-hover">
+    <MudCardHeader>
+        @if (HeaderContent != null)
+        {
+            @HeaderContent
+        }
+    </MudCardHeader>
+    <MudCardContent>
+        @if (Content != null)
+        {
+            @Content
+        }
+    </MudCardContent>
+    <MudCardActions>
+        <MudPaper Class="pa-1 d-flex flex-grow-1 justify-space-between mt-3 button-actions" Elevation="0">
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => OnEdit.InvokeAsync())" Class="action-button"></MudIconButton>
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => OnDelete.InvokeAsync())" Class="action-button"></MudIconButton>
+        </MudPaper>
+    </MudCardActions>
+</MudCard>
+
+<style>
+.entity-card-hover {
+    transition: all 0.3s ease;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.entity-card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-button {
+    transition: all 0.2s ease;
+    opacity: 0.7;
+}
+
+.action-button:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+</style>
+
+@code {
+    [Parameter]
+    public RenderFragment? HeaderContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? Content { get; set; }
+
+    [Parameter]
+    public EventCallback OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+}

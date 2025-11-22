@@ -12,3 +12,7 @@
 📈 README with screenshots - Show it off properly
 ⚠️ Limited mobile responsiveness - "A bit" isn't enough for 2025
 
+
+
+-- fix the size when adding new acccount and picking an icon
+-- fix the not highligted transactions and reoccuring transactions tabs

@@ -24,6 +24,22 @@
             <MudGrid>
                 <MudItem xs="12">
                     <MudForm @ref="form">
+                        @if(Reoccuring)
+                        {
+                            <MudAlert Severity="Severity.Info" Elevation="0" Variant="Variant.Filled" Class="mb-4">
+                                You are adding a reoccuring transaction. This transaction will be repeated based on the reoccuring settings.
+                            </MudAlert>
+
+                            
+                        <MudSelect @bind-Value="TransactionDto.ReoccuranceFrequency" Label="Reoccurance type" Variant="Variant.Outlined"
+                            Required="true" RequiredError="Reoccurance type is required!"
+                            @bind-Value:after="this.TransactionTypeChanged">
+                            @foreach (ReoccuranceFrequency? item in Enum.GetValues(typeof(ReoccuranceFrequency)))
+                            {
+                                <MudSelectItem Value="@((ReoccuranceFrequency?)item)">@item</MudSelectItem>
+                            }
+                        </MudSelect>
+                        }
                         <MudSelect @bind-Value="TransactionDto.AccountId" Label="Account" Variant="Variant.Outlined"
                             Required="true" RequiredError="Account is required!">
                             @foreach (var account in Accounts)
@@ -130,17 +146,20 @@
 }
 
 @code {
-    MudForm? form;
-    MudAutocomplete<Tag>? tagAutocomplete;
-    Tag? selectedTag;
-    private List<Tag> AllTags = new();
-    private List<Tag> SelectedTags = new();
 
     [CascadingParameter]
     private IMudDialogInstance? MudDialog { get; set; }
 
     [Parameter]
     public int? TransactionId { get; set; }
+
+    [Parameter]
+    public bool Reoccuring{get; set;}
+    MudForm? form;
+    MudAutocomplete<Tag>? tagAutocomplete;
+    Tag? selectedTag;
+    private List<Tag> AllTags = new();
+    private List<Tag> SelectedTags = new();
     private List<Category>? Categories { get; set; }
     private List<Account>? Accounts { get; set; }
     private TransactionDto? TransactionDto { get; set; }
@@ -175,7 +194,7 @@
         TransactionDto.Time = DateTime.Now.TimeOfDay;
         TransactionDto.Amount = 0;
         SelectedTags = new();
-
+        TransactionDto.Reoccuring = Reoccuring;
         if (TransactionId != null)
         {
             var transaction = await TransactionService.GetAsync((int)TransactionId);
@@ -196,13 +215,12 @@
                 Time = transaction.Date.TimeOfDay,
                 Description = transaction.Description,
                 TransactionType = transaction.Category.Type,
-                TagIds = transaction.TransactionTags.Select(tt => tt.TagId).ToList()
+                TagIds = transaction.TransactionTags.Select(tt => tt.TagId).ToList(),
+                Reoccuring = transaction.IsReoccuring,
+                ReoccuranceFrequency=transaction.ReoccuranceFrequency,
             };
-
             SelectedTags = transaction.TransactionTags.Select(tt => tt.Tag).ToList();
         }
-
-
         Categories = Categories.Where(c => c.Type == TransactionDto.TransactionType).ToList();
     }
 
@@ -286,7 +304,7 @@
             StateHasChanged();
             return;
         }
-
+        TransactionDto.Reoccuring = Reoccuring;
         await TransactionService.SaveAsync(TransactionDto);
         var message = TransactionId == null ? "Transaction successfully added!" : "Transaction successfully updated!";
         Snackbar.Add(message, Severity.Success);

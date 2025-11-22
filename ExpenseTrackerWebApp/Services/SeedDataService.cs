@@ -28,25 +28,9 @@ namespace ExpenseTrackerWebApp.Services
                 return;
             }
 
-            // this will also delete all the transactions due to foreign key constraints
-            await _accountService.DeleteAllAsync();
-            var bankAccount = new Account
-            {
-                Name = "Bank Account",
-                InitialBalance = 2500m,
-                IdentityUserId = userId
-            };
-            var cashAccount = new Account
-            {
-                Name = "Cash",
-                InitialBalance = 300m,
-                IdentityUserId = userId
-            };
-
-            await _accountService.SaveAsync(bankAccount);
-            await _accountService.SaveAsync(cashAccount);
+            await _accountService.AssignUserDefaultAccounts(userId);
             var accounts = await _accountService.GetAllAsync();
-            
+
             await _categoryService.DeleteAllAsync();
             await _categoryService.AssignUserDefaultCategories(userId);
             var categories = await _categoryService.GetAllAsync();

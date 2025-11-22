@@ -12,10 +12,22 @@ namespace ExpenseTrackerWebApp.Database.Models
         public int CategoryId{ get; set; }
         public Category Category{ get; set; }
         public ICollection<TransactionTag> TransactionTags { get; set; }
+        public bool? IsReoccuring{get; set;}
+        public ReoccuranceFrequency? ReoccuranceFrequency{get; set;}
+        public DateTime? NextReoccuranceDate{get; set;}
 
         public Transaction()
         {
             TransactionTags = new List<TransactionTag>();
         }
+    }
+
+
+    public enum ReoccuranceFrequency
+    {
+        Daily,
+        Weekly,
+        Monthly,
+        Yearly
     }
 }

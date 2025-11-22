@@ -37,9 +37,14 @@ namespace ExpenseTrackerWebApp.Services
                 .ThenInclude(tt => tt.Tag)
             .Where(t => t.Account.IdentityUserId == _currentUserService.GetUserId());
         }
-        public async Task<List<Transaction>> GetAllAsync()
+        public async Task<List<Transaction>> GetAllAsync(bool reoccuring = false)
         {
-            return await GetTransactionsQuery(_context).OrderByDescending(t => t.Date).ToListAsync();
+            var result = GetTransactionsQuery(_context);
+            if(reoccuring){
+                result = result.Where(t => t.IsReoccuring == true);
+            }
+
+            return await result.OrderByDescending(t => t.Date).ToListAsync();
         }
 
         public async Task SaveAsync(TransactionDto transactionDto)
@@ -61,8 +66,28 @@ namespace ExpenseTrackerWebApp.Services
                 Description = transactionDto.Description,
                 Date = (DateTime)(transactionDto.Date + transactionDto.Time),
                 AccountId = (int)transactionDto.AccountId,
-                CategoryId = (int)transactionDto.CategoryId
+                CategoryId = (int)transactionDto.CategoryId,
+                IsReoccuring = transactionDto.Reoccuring,
+                ReoccuranceFrequency = transactionDto.ReoccuranceFrequency
             };
+
+            if(transaction.IsReoccuring!= null && transaction.IsReoccuring == true && transaction.ReoccuranceFrequency != null){
+                switch(transaction.ReoccuranceFrequency){
+                    case ReoccuranceFrequency.Daily:
+                        transaction.NextReoccuranceDate = transaction.Date.AddDays(1);
+                        break;
+                    case ReoccuranceFrequency.Weekly:
+                        transaction.NextReoccuranceDate = transaction.Date.AddDays(7);
+                        break;
+                    case ReoccuranceFrequency.Monthly:
+                        transaction.NextReoccuranceDate = transaction.Date.AddMonths(1);
+                        break;
+                    case ReoccuranceFrequency.Yearly:
+                        transaction.NextReoccuranceDate = transaction.Date.AddYears(1);
+                        break;
+                }
+
+            }
 
             await SaveInternal(transaction, (TransactionType)transactionDto.TransactionType);
             transactionDto.Id = transaction.Id;
@@ -73,7 +98,9 @@ namespace ExpenseTrackerWebApp.Services
 
         public async Task SaveAsync(Transaction transaction)
         {
+            var tagIds = transaction.TransactionTags.Select(t => t.TagId).ToList();
             await SaveInternal(transaction, transaction.Category.Type);
+            await _tagService.SetTransactionTagsAsync(transaction.Id, tagIds);
         }
         
         private async Task SaveInternal(Transaction transaction, TransactionType type)
@@ -86,6 +113,7 @@ namespace ExpenseTrackerWebApp.Services
 
             transaction.Category = null!;
             transaction.Account = null!;
+            transaction.TransactionTags = null!;
 
             if (transaction.Id == 0)
             {
@@ -118,16 +146,66 @@ namespace ExpenseTrackerWebApp.Services
             return await GetTransactionsQuery(_context).SingleAsync(t => t.Id == transactionId);
         }
 
-        public async Task<TransactionsDto> GetTransactionsDto()
+        public async Task<TransactionsDto> GetTransactionsDto(bool reoccuring = false)
         {
             var result = new TransactionsDto();
-            result.Transactions = await GetAllAsync();
+            result.Transactions = await GetAllAsync(reoccuring);
             result.FilteredTransactions = result.Transactions.ToList();
             result.Accounts = await _accountService.GetAllAsync();
             result.Categories = await _categoryService.GetAllAsync();
             result.FilteredCategories = result.Categories.ToList();
             result.Tags = await _tagService.GetAllAsync();
             return result;
+        }
+
+
+        public async Task CheckForReoccuringTransactions(){
+            
+            var reoccuringTransactions = await GetAllAsync(true);
+            if(reoccuringTransactions.Count == 0){
+                return;
+            }
+
+            foreach(var transaction in reoccuringTransactions){
+                if(transaction.NextReoccuranceDate != null && transaction.NextReoccuranceDate <= DateTime.Today){
+
+                    while(transaction.NextReoccuranceDate <= DateTime.Today){
+                        var newTransaction = new Transaction(){
+                            Amount = transaction.Amount,
+                            AccountId = transaction.AccountId,
+                            Account = transaction.Account,
+                            CategoryId = transaction.CategoryId,
+                            Category = transaction.Category,
+                            Description = transaction.Description,
+                            Date = (DateTime)transaction.NextReoccuranceDate,
+                            IsReoccuring = false,
+                            ReoccuranceFrequency = null,
+                            NextReoccuranceDate = null,
+                            TransactionTags = transaction.TransactionTags
+                        };
+
+                        // Calculate next reoccurance date
+                        switch(transaction.ReoccuranceFrequency){
+                            case ReoccuranceFrequency.Daily:
+                                transaction.NextReoccuranceDate = transaction.NextReoccuranceDate!.Value.AddDays(1);
+                                break;
+                            case ReoccuranceFrequency.Weekly:
+                                transaction.NextReoccuranceDate = transaction.NextReoccuranceDate!.Value.AddDays(7);
+                                break;
+                            case ReoccuranceFrequency.Monthly:
+                                transaction.NextReoccuranceDate = transaction.NextReoccuranceDate!.Value.AddMonths(1);
+                                break;
+                            case ReoccuranceFrequency.Yearly:
+                                transaction.NextReoccuranceDate = transaction.NextReoccuranceDate!.Value.AddYears(1);
+                                break;
+                        }
+
+                        await SaveAsync(newTransaction);
+                    }
+
+                }
+            }
+
         }
     }
 }
